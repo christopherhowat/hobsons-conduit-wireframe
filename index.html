@@ -73,7 +73,7 @@
   .wf-nav-col-title { font-weight: 700; font-size: 11px; color: #333; margin-bottom: 4px; transition: margin 0.35s ease; }
   .wf-nav-col a { display: block; font-size: 10px; color: #666; text-decoration: none; padding: 1px 0; cursor: pointer; }
   .wf-nav-col a:hover, .wf-nav-col a.current { color: #333; font-weight: 600; }
-  .wf-nav-links { transition: opacity 0.25s ease; }
+  .wf-nav-links { max-height: 120px; overflow: hidden; transition: max-height 0.35s ease, opacity 0.25s ease; }
   .wf-nav.instant, .wf-nav.instant * { transition: none !important; }
   .wf-nav-col-title::after {
     content: '\25BE';
@@ -86,33 +86,12 @@
     transition: max-width 0.35s ease, margin 0.35s ease, opacity 0.35s ease;
   }
   @media (min-width: 761px) {
-    .wf-nav.compact { padding-top: 6px; padding-bottom: 6px; overflow: visible; }
-    .wf-nav.compact .logo-box img { height: 40px !important; }
-    .wf-nav.compact .wf-nav-col-title { margin-bottom: 0; cursor: pointer; }
-    .wf-nav.compact .wf-nav-col-title::after { max-width: 1em; margin-left: 4px; opacity: 1; }
-    .wf-nav.compact .wf-nav-links {
-      position: absolute;
-      top: 100%;
-      left: -12px;
-      min-width: 150px;
-      padding: 8px 12px;
-      background: #f5f5f0;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(-4px);
-      transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s linear 0.15s;
-    }
-    .wf-nav.compact .wf-nav-col:last-child .wf-nav-links { left: auto; right: -12px; }
-    .wf-nav.compact .wf-nav-col:hover .wf-nav-links,
-    .wf-nav.compact .wf-nav-col.open .wf-nav-links {
-      opacity: 1;
-      visibility: visible;
-      transform: none;
-      transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s;
-    }
+    .wf-nav.compact:not(.peek) { padding-top: 6px; padding-bottom: 6px; }
+    .wf-nav.compact:not(.peek) .logo-box img { height: 40px !important; }
+    .wf-nav.compact .wf-nav-col-title { cursor: pointer; }
+    .wf-nav.compact:not(.peek) .wf-nav-col-title { margin-bottom: 0; }
+    .wf-nav.compact:not(.peek) .wf-nav-col-title::after { max-width: 1em; margin-left: 4px; opacity: 1; }
+    .wf-nav.compact:not(.peek) .wf-nav-links { max-height: 0; opacity: 0; }
   }
 
   .wf-body {
@@ -879,6 +858,7 @@
     .wf-nav.open .wf-nav-cols { display: flex; }
     .wf-nav-col { flex: 1; min-width: 0; }
     .wf-nav-col a { font-size: 13px; padding: 6px 0; cursor: pointer; }
+    .wf-nav-links { max-height: none; }
     .wf-nav.compact { padding-top: 4px; padding-bottom: 4px; }
     .wf-nav.compact .logo-box img { height: 26px !important; }
     .wf-nav-menu-btn {
@@ -1826,7 +1806,7 @@
     document.querySelectorAll('.wf-nav').forEach(nav => {
       if (instant) nav.classList.add('instant')
       nav.classList.toggle('compact', on)
-      nav.querySelectorAll('.wf-nav-col.open').forEach(c => c.classList.remove('open'))
+      nav.classList.remove('peek')
       if (instant) { nav.offsetHeight; nav.classList.remove('instant') }
     })
     clearTimeout(navRelayout)
@@ -1841,18 +1821,20 @@
     navRelayout = setTimeout(relayout, 700)
   }
 
-  document.querySelectorAll('.wf-nav-col-title').forEach(title => {
-    title.addEventListener('click', e => {
-      if (!title.closest('.wf-nav.compact') || MOBILE.matches) return
+  const CAN_HOVER = window.matchMedia('(hover: hover)')
+  document.querySelectorAll('.wf-nav').forEach(nav => {
+    const canPeek = () => nav.classList.contains('compact') && !MOBILE.matches
+    nav.querySelector('.wf-nav-cols').addEventListener('mouseenter', () => { if (canPeek()) nav.classList.add('peek') })
+    nav.addEventListener('mouseleave', () => nav.classList.remove('peek'))
+    nav.querySelectorAll('.wf-nav-col-title').forEach(title => title.addEventListener('click', e => {
+      if (!canPeek()) return
       e.stopPropagation()
-      const col = title.parentElement
-      const wasOpen = col.classList.contains('open')
-      document.querySelectorAll('.wf-nav-col.open').forEach(c => c.classList.remove('open'))
-      col.classList.toggle('open', !wasOpen)
-    })
+      if (CAN_HOVER.matches) nav.classList.add('peek')
+      else nav.classList.toggle('peek')
+    }))
   })
-  document.addEventListener('click', () => {
-    document.querySelectorAll('.wf-nav-col.open').forEach(c => c.classList.remove('open'))
+  document.addEventListener('click', e => {
+    document.querySelectorAll('.wf-nav.peek').forEach(nav => { if (!nav.contains(e.target)) nav.classList.remove('peek') })
   })
 
   document.querySelectorAll('.wf-nav-col a[data-key]').forEach(a => {
