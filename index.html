@@ -38,10 +38,11 @@
     box-shadow: none;
   }
   .page.active { display: block; }
+  #page-home { background: #f5f5f0; }
 
   .wf-nav {
-    background: #EDEAE0;
-    border-bottom: 2px solid #ddd;
+    background: #f5f5f0;
+    box-shadow: 0 1px 0 #f5f5f0;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -95,7 +96,7 @@
       left: -12px;
       min-width: 150px;
       padding: 8px 12px;
-      background: #EDEAE0;
+      background: #f5f5f0;
       border: 1px solid #ddd;
       border-radius: 6px;
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
@@ -358,12 +359,12 @@
     height: 26px;
     pointer-events: none;
     background:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='26' viewBox='0 0 240 26'%3E%3Cpath d='M0 14 Q30 4 60 14 T120 14 T180 14 T240 14 V26 H0 Z' fill='rgb(207,227,234)'/%3E%3Cpath d='M0 14 Q30 4 60 14 T120 14 T180 14 T240 14' fill='none' stroke='rgba(255,255,255,0.75)' stroke-width='2.2'/%3E%3C/svg%3E") repeat-x 0 100% / 240px 26px,
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='330' height='26' viewBox='0 0 330 26'%3E%3Cpath d='M0 12 Q41 2 82 12 T165 12 T247 12 T330 12 V26 H0 Z' fill='rgb(226,235,237)'/%3E%3C/svg%3E") repeat-x 0 100% / 330px 26px;
-    animation: wf-wave 7s linear infinite;
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='26' viewBox='0 0 480 26'%3E%3Cpath d='M0 14 Q60 4 120 14 T240 14 T360 14 T480 14 V26 H0 Z' fill='rgb(207,227,234)'/%3E%3Cpath d='M0 14 Q60 4 120 14 T240 14 T360 14 T480 14' fill='none' stroke='rgba(255,255,255,0.75)' stroke-width='2.2'/%3E%3C/svg%3E") repeat-x 0 100% / 480px 26px,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='660' height='26' viewBox='0 0 660 26'%3E%3Cpath d='M0 12 Q82 2 165 12 T330 12 T495 12 T660 12 V26 H0 Z' fill='rgb(226,235,237)'/%3E%3C/svg%3E") repeat-x 0 100% / 660px 26px;
+    animation: wf-wave 14s linear infinite;
   }
   @keyframes wf-wave {
-    to { background-position: 240px 100%, -330px 100%; }
+    to { background-position: 480px 100%, -660px 100%; }
   }
   @media (prefers-reduced-motion: reduce) { .wf-wave { animation: none; } }
   .wf-depth-reading {
@@ -592,7 +593,6 @@
     padding: 10px;
     line-height: 1.3;
     cursor: pointer;
-    animation: wf-oracle-pulse 2.6s ease-in-out infinite;
     transition: transform 0.2s ease;
   }
   body.home-only [data-goto]:not(.logo-box),
@@ -603,11 +603,6 @@
   body.home-only .wf-footer-cols a:hover { text-decoration: none; }
   .wf-oracle:hover {
     transform: scale(1.08) rotate(-4deg);
-    animation-play-state: paused;
-  }
-  @keyframes wf-oracle-pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(122,158,126,0.35); }
-    50% { box-shadow: 0 0 0 12px rgba(122,158,126,0); }
   }
 
   .wf-pin-head { margin-bottom: 10px; }
@@ -642,7 +637,7 @@
 
     width: min(100%, calc((100vh - var(--nav-h, 0px) - var(--above-h, 0px) - 80px) * 400 / 240));
     aspect-ratio: 400 / 240;
-    margin: 0;
+    margin: 0 auto;
     border-radius: 12px;
     overflow: hidden;
     border: 2px solid rgba(122, 158, 126, 0.35);
@@ -711,7 +706,7 @@
   .wf-route-path-bg {
     fill: none;
     stroke: #fff;
-    stroke-width: 9;
+    stroke-width: 15;
     stroke-linecap: round;
     stroke-linejoin: round;
     opacity: 0.85;
@@ -721,7 +716,7 @@
   .wf-route-path {
     fill: none;
     stroke: #b23b2e;
-    stroke-width: 4;
+    stroke-width: 8;
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-dasharray: 1000;
@@ -784,7 +779,7 @@
 
   .wf-footer { margin-top: 0; }
   .wf-footer-block {
-    background: #EDEAE0;
+    background: #f5f5f0;
     color: #0e1a26;
     display: flex;
     flex-direction: column;
@@ -867,8 +862,7 @@
       display: none;
       position: absolute;
       top: 100%; left: 0; right: 0;
-      background: #EDEAE0;
-      border-bottom: 2px solid #ddd;
+      background: #f5f5f0;
       padding: 12px 16px 16px;
       gap: 24px;
     }
@@ -958,7 +952,7 @@
       <div class="wf-depth-reading" id="wf-depth-reading">Water depth:</div>
 
       <div class="wf-hero-content">
-        <img class="wordmark-img" src="wireframe-assets/bingbong.svg" alt="Hobson's Conduit Trust" />
+        <img class="wordmark-img" src="wireframe-assets/bingbong-green.svg" alt="Hobson's Conduit Trust" />
         <div class="wf-hero-intro">Short intro line describing the Trust's purpose</div>
       </div>
 
@@ -988,15 +982,7 @@
               <div class="wf-timeline-content"><div class="wf-img">Icon</div><div class="label">Annotated Timeline</div></div>
             </div>
             <div class="wf-timeline-item">
-              <div class="wf-timeline-head"><div class="wf-timeline-year">1610</div><div class="wf-timeline-dot"></div></div>
-              <div class="wf-timeline-content"><div class="wf-img">Icon</div><div class="label">Annotated Timeline</div></div>
-            </div>
-            <div class="wf-timeline-item">
               <div class="wf-timeline-head"><div class="wf-timeline-year">1614</div><div class="wf-timeline-dot"></div></div>
-              <div class="wf-timeline-content"><div class="wf-img">Icon</div><div class="label">Annotated Timeline</div></div>
-            </div>
-            <div class="wf-timeline-item">
-              <div class="wf-timeline-head"><div class="wf-timeline-year">1631</div><div class="wf-timeline-dot"></div></div>
               <div class="wf-timeline-content"><div class="wf-img">Icon</div><div class="label">Annotated Timeline</div></div>
             </div>
             <div class="wf-timeline-item">
@@ -1004,23 +990,11 @@
               <div class="wf-timeline-content"><div class="wf-img">Icon</div><div class="label">Annotated Timeline</div></div>
             </div>
             <div class="wf-timeline-item">
-              <div class="wf-timeline-head"><div class="wf-timeline-year">1788</div><div class="wf-timeline-dot"></div></div>
-              <div class="wf-timeline-content"><div class="wf-img">Icon</div><div class="label">Annotated Timeline</div></div>
-            </div>
-            <div class="wf-timeline-item">
               <div class="wf-timeline-head"><div class="wf-timeline-year">1855</div><div class="wf-timeline-dot"></div></div>
               <div class="wf-timeline-content"><div class="wf-img">Icon</div><div class="label">Annotated Timeline</div></div>
             </div>
             <div class="wf-timeline-item">
-              <div class="wf-timeline-head"><div class="wf-timeline-year">1898</div><div class="wf-timeline-dot"></div></div>
-              <div class="wf-timeline-content"><div class="wf-img">Icon</div><div class="label">Annotated Timeline</div></div>
-            </div>
-            <div class="wf-timeline-item">
               <div class="wf-timeline-head"><div class="wf-timeline-year">1960</div><div class="wf-timeline-dot"></div></div>
-              <div class="wf-timeline-content"><div class="wf-img">Icon</div><div class="label">Annotated Timeline</div></div>
-            </div>
-            <div class="wf-timeline-item">
-              <div class="wf-timeline-head"><div class="wf-timeline-year">2001</div><div class="wf-timeline-dot"></div></div>
               <div class="wf-timeline-content"><div class="wf-img">Icon</div><div class="label">Annotated Timeline</div></div>
             </div>
             <div class="wf-timeline-item">
@@ -1052,7 +1026,7 @@
               <svg viewBox="0 0 609 902" preserveAspectRatio="none">
                 <path class="wf-route-path-bg" pathLength="1000" d="M432,784 C385,760 350,730 345,690 C340,650 365,620 352,580 C340,545 300,548 262,540 C232,534 248,490 245,450 C242,410 236,375 233,340 C230,305 226,270 218,235 C210,200 195,165 175,130" />
                 <path class="wf-route-path" pathLength="1000" d="M432,784 C385,760 350,730 345,690 C340,650 365,620 352,580 C340,545 300,548 262,540 C232,534 248,490 245,450 C242,410 236,375 233,340 C230,305 226,270 218,235 C210,200 195,165 175,130" />
-                <circle class="wf-route-end" cx="175" cy="130" r="7" />
+                <circle class="wf-route-end" cx="175" cy="130" r="10" />
               </svg>
             </div>
           </div>
@@ -1696,7 +1670,7 @@
     })
   }
 
-  const ROUTE_SCROLL_BUDGET = 600
+  const ROUTE_SCROLL_BUDGET = 1100
 
   function layoutRouteMaps() {
     document.querySelectorAll('.wf-route-pin').forEach(pin => {
@@ -1770,7 +1744,8 @@
       nav.classList.add('instant')
       const h = MOBILE.matches ? 44 : Math.min(90, cols.getBoundingClientRect().height || 90)
       img.style.height = h + 'px'
-      if (nav.offsetHeight) nav.parentElement.style.height = nav.offsetHeight + 'px'
+      const navH = nav.getBoundingClientRect().height
+      if (navH) nav.parentElement.style.height = navH + 'px'
       nav.classList.remove('instant')
     })
   }
@@ -1847,6 +1822,13 @@
     }
     oracle.addEventListener('click', jump)
     oracle.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); jump() } })
+    ;(function float(now) {
+      const x = 7 * Math.sin(now / 2300) + 3 * Math.sin(now / 1100 + 2)
+      const y = 9 * Math.sin(now / 1700 + 1) + 3 * Math.sin(now / 900)
+      oracle.style.translate = `${x.toFixed(1)}px ${y.toFixed(1)}px`
+      oracle.style.rotate = `${(3 * Math.sin(now / 2600)).toFixed(2)}deg`
+      requestAnimationFrame(float)
+    })(performance.now())
   })
 
   const HSCROLL_SPEED = 1.2
