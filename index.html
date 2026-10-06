@@ -1,0 +1,2249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="wireframe-assets/little-logo.svg" type="image/svg+xml" />
+<title>Hobson's Conduit Trust | Site Wireframe</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+  body {
+    overflow-x: clip;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    color: #222;
+    background: #f0f0f0;
+    min-height: 100vh;
+  }
+
+  [data-goto] { cursor: pointer; }
+
+  #canvas {
+    padding: 0;
+    min-height: 100vh;
+    background: #fff;
+  }
+
+  .page {
+    display: none;
+    max-width: none;
+    margin: 0;
+    background: #fff;
+    border: none;
+    box-shadow: none;
+  }
+  .page.active { display: block; }
+
+  .wf-nav {
+    background: #EDEAE0;
+    border-bottom: 2px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 24px;
+    font-size: 11px;
+    color: #666;
+    position: relative;
+    overflow: hidden;
+    pointer-events: auto;
+    transition: padding 0.35s ease;
+  }
+  .wf-nav-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .wf-nav .logo-box {
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    max-width: 50%;
+  }
+
+  .wf-nav .logo-box img { max-width: 100%; width: auto; display: block; transition: height 0.35s ease; }
+  .wf-nav-cols { display: flex; gap: 32px; }
+  .wf-nav-col { text-align: left; min-width: 84px; position: relative; }
+  .wf-nav-col-title { font-weight: 700; font-size: 11px; color: #333; margin-bottom: 4px; transition: margin 0.35s ease; }
+  .wf-nav-col a { display: block; font-size: 10px; color: #666; text-decoration: none; padding: 1px 0; cursor: pointer; }
+  .wf-nav-col a:hover, .wf-nav-col a.current { color: #333; font-weight: 600; }
+  .wf-nav-links { transition: opacity 0.25s ease; }
+  .wf-nav.instant, .wf-nav.instant * { transition: none !important; }
+  .wf-nav-col-title::after {
+    content: '\25BE';
+    display: inline-block;
+    max-width: 0;
+    margin-left: 0;
+    opacity: 0;
+    overflow: hidden;
+    vertical-align: top;
+    transition: max-width 0.35s ease, margin 0.35s ease, opacity 0.35s ease;
+  }
+  @media (min-width: 761px) {
+    .wf-nav.compact { padding-top: 6px; padding-bottom: 6px; overflow: visible; }
+    .wf-nav.compact .logo-box img { height: 40px !important; }
+    .wf-nav.compact .wf-nav-col-title { margin-bottom: 0; cursor: pointer; }
+    .wf-nav.compact .wf-nav-col-title::after { max-width: 1em; margin-left: 4px; opacity: 1; }
+    .wf-nav.compact .wf-nav-links {
+      position: absolute;
+      top: 100%;
+      left: -12px;
+      min-width: 150px;
+      padding: 8px 12px;
+      background: #EDEAE0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-4px);
+      transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s linear 0.15s;
+    }
+    .wf-nav.compact .wf-nav-col:last-child .wf-nav-links { left: auto; right: -12px; }
+    .wf-nav.compact .wf-nav-col:hover .wf-nav-links,
+    .wf-nav.compact .wf-nav-col.open .wf-nav-links {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s;
+    }
+  }
+
+  .wf-body {
+    padding: 32px 40px 48px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .wf-body.narrow { max-width: 720px; }
+
+  .wf-eyebrow {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: #999;
+    margin-bottom: 6px;
+  }
+
+  .wf-h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #222;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 16px;
+  }
+  .wf-h1 em { font-weight: 300; font-style: italic; }
+
+  .wf-h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--fade-heading, #333);
+    margin-bottom: 10px;
+    margin-top: 28px;
+  }
+
+  .wf-h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--fade-heading, #444);
+    margin-bottom: 4px;
+  }
+
+  .wf-text {
+    background: repeating-linear-gradient(
+      180deg,
+      #f0f0f0 0, #f0f0f0 10px,
+      transparent 10px, transparent 16px
+    );
+    border-radius: 2px;
+    height: 56px;
+    margin-bottom: 10px;
+  }
+  .wf-text.short { height: 20px; }
+  .wf-text.medium { height: 36px; }
+  .wf-text.long { height: 80px; }
+  .wf-text.tall { height: 120px; }
+
+  .wf-img {
+    background: #e8e8e8;
+    border: 1px dashed #bbb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 11px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    flex-shrink: 0;
+    text-align: center;
+    padding: 8px;
+  }
+  .wf-img::before { content: "⬚  "; font-size: 18px; color: #bbb; }
+
+  .wf-map {
+    background: #e0ece0;
+    border: 1px dashed #9aba9e;
+    height: 320px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #7a9e7e;
+    font-size: 12px;
+    font-weight: 600;
+    gap: 8px;
+    margin-bottom: 12px;
+    text-align: center;
+    padding: 12px;
+  }
+
+  .wf-btn {
+    display: inline-block;
+    padding: 8px 18px;
+    background: #333;
+    color: #fff;
+    font-size: 11px;
+    border-radius: 4px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .wf-btn.outline {
+    background: transparent;
+    color: var(--fade-heading, #333);
+    border: 1.5px solid var(--fade-heading, #333);
+  }
+
+  .wf-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .wf-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .wf-grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+  .wf-grid-5 { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; }
+  .wf-grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+  .wf-grid-1-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 24px; }
+
+  .wf-card {
+    border: 1.5px solid #ddd;
+    border-radius: 6px;
+    padding: 16px;
+    background: #fafaf8;
+    margin-bottom: 12px;
+  }
+  .wf-card.highlight {
+    border-color: #b5cdb7;
+    background: #f0f5f0;
+  }
+
+  .wf-aside {
+    border: 1.5px solid #c8d8c8;
+    border-radius: 6px;
+    padding: 16px;
+    background: #f2f7f2;
+  }
+
+  .wf-row {
+    border-bottom: 1px solid #e8e8e8;
+    padding: 12px 0;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .wf-row:last-child { border-bottom: none; }
+  .wf-row-label {
+    width: 140px;
+    flex-shrink: 0;
+    font-weight: 600;
+    font-size: 12px;
+    color: #444;
+  }
+  .wf-row-content { flex: 1; }
+
+  .wf-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #e8f0e8;
+    color: #5a7a5a;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-left: 8px;
+  }
+
+  .wf-divider {
+    border: none;
+    border-top: 1px solid var(--fade-border, #e0e0e0);
+    margin: 28px 0;
+  }
+
+  .wf-hero {
+    position: relative;
+    overflow: hidden;
+    background: #f5f5f0;
+
+    min-height: max(520px, 85vh);
+    display: flex;
+  }
+  .wf-hero-content {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 14px;
+
+    padding: 48px 96px;
+    text-align: center;
+  }
+  .wf-hero-intro {
+    font-size: 12px;
+    color: #3d5546;
+    max-width: 480px;
+  }
+  .wf-hero .wordmark-img {
+    width: 100%;
+    max-width: 360px;
+    height: auto;
+    display: block;
+  }
+
+  .wf-hero { --ruler-inset: 48px; }
+  .wf-depth-scale {
+    position: absolute;
+    left: 28px;
+    top: var(--ruler-inset);
+    bottom: var(--ruler-inset);
+    width: 1px;
+    background: rgba(61, 85, 70, 0.35);
+    z-index: 3;
+  }
+
+  .wf-depth-tick {
+    position: absolute;
+    left: 0;
+    width: 12px;
+    height: 1px;
+    background: #3d5546;
+  }
+  .wf-depth-tick span {
+    position: absolute;
+    left: 18px;
+    top: -7px;
+    font-size: 11px;
+    color: #3d5546;
+    white-space: nowrap;
+  }
+
+  .wf-water-overlay {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 0%;
+
+    background: linear-gradient(180deg, rgb(207, 227, 234), rgb(171, 204, 218));
+    transition: height 2.6s cubic-bezier(.22,.61,.36,1);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .wf-wave {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 100%;
+    height: 26px;
+    pointer-events: none;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='26' viewBox='0 0 240 26'%3E%3Cpath d='M0 14 Q30 4 60 14 T120 14 T180 14 T240 14 V26 H0 Z' fill='rgb(207,227,234)'/%3E%3Cpath d='M0 14 Q30 4 60 14 T120 14 T180 14 T240 14' fill='none' stroke='rgba(255,255,255,0.75)' stroke-width='2.2'/%3E%3C/svg%3E") repeat-x 0 100% / 240px 26px,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='330' height='26' viewBox='0 0 330 26'%3E%3Cpath d='M0 12 Q41 2 82 12 T165 12 T247 12 T330 12 V26 H0 Z' fill='rgb(226,235,237)'/%3E%3C/svg%3E") repeat-x 0 100% / 330px 26px;
+    animation: wf-wave 7s linear infinite;
+  }
+  @keyframes wf-wave {
+    to { background-position: 240px 100%, -330px 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) { .wf-wave { animation: none; } }
+  .wf-depth-reading {
+    position: absolute;
+    top: 16px; right: 16px;
+    z-index: 3;
+    background: #fffbe6;
+    border: 1px solid #f0d060;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 10px;
+    color: #7a6000;
+  }
+
+  .wf-depth-fade {
+    position: relative;
+    background-color: rgb(171, 204, 218);
+
+    clip-path: inset(0);
+  }
+  .wf-depth-fade > .wf-body,
+  .wf-depth-fade > div:not([class]) { position: relative; z-index: 1; }
+
+  .wf-band-break { height: 220px; }
+
+  .wf-band [data-tone] { transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease; }
+  .wf-band [data-tone="light"]:not(.wf-text):not(.wf-btn) { text-shadow: 0 1px 3px rgba(0, 18, 36, 0.45); }
+  @media (max-width: 760px) { .wf-band-break { height: 160px; } }
+
+  .wf-sunlight {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wf-sunlight canvas {
+    position: fixed;
+    top: 0; left: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .wf-water-particles {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    top: 60%;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+    -webkit-mask-image: linear-gradient(transparent, #000 500px);
+    mask-image: linear-gradient(transparent, #000 500px);
+  }
+  .wf-water-particles span {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(205, 225, 250, 0.5);
+  }
+
+  .wf-upper-life {
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    height: 2400px;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+    -webkit-mask-image: linear-gradient(#000 calc(100% - 400px), transparent);
+    mask-image: linear-gradient(#000 calc(100% - 400px), transparent);
+  }
+  .wf-bubbles {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .wf-bubble { position: absolute; opacity: 0; }
+  .wf-bubble i {
+    display: block;
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    background: rgba(225, 238, 252, 0.8);
+  }
+  .wf-depth-fade .wf-text {
+    background: repeating-linear-gradient(
+      180deg,
+      var(--fade-border, #f0f0f0) 0, var(--fade-border, #f0f0f0) 10px,
+      transparent 10px, transparent 16px
+    );
+  }
+
+  .wf-depth-fade .wf-btn:not(.outline) {
+    background: var(--fade-heading, #333);
+    color: var(--fade-bg, #fff);
+  }
+
+  .wf-critter {
+    width: 64px; height: 64px;
+    background: #e8e8e8;
+    border: 1.5px dashed #bbb;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; color: #666; text-align: center;
+    margin: 18px auto;
+    line-height: 1.2;
+  }
+
+  .wf-icon-card .wf-img { height: 74px; margin-bottom: 6px; font-size: 9px; }
+  .wf-icon-card .label { font-size: 10px; color: #666; text-align: center; }
+
+  .wf-hscroll-pin {
+    position: relative;
+    height: 60vh;
+    margin: 0 0 16px;
+  }
+
+  .wf-hscroll-sticky {
+    position: sticky;
+    top: 0;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 16px 0;
+  }
+  .wf-hscroll-sticky .wf-pin-head { margin-bottom: 0; }
+
+  .wf-hscroll-window {
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 80px, #000 calc(100% - 80px), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 80px, #000 calc(100% - 80px), transparent);
+  }
+  .wf-hscroll-track {
+    position: relative;
+    display: flex;
+    flex-wrap: nowrap;
+    width: max-content;
+    padding: 0 40px;
+    gap: 40px;
+  }
+
+  .wf-timeline-track::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 56px;
+    height: 2px;
+
+    background: var(--fade-heading, #333);
+    opacity: 0.4;
+    transition: background-color 0.2s ease;
+    z-index: 0;
+  }
+
+  .wf-hscroll-pin { --hs-size: clamp(260px, calc(100vh - 380px), 480px); }
+  .wf-timeline-item {
+    position: relative;
+    width: var(--hs-size);
+    flex-shrink: 0;
+  }
+  .wf-timeline-head {
+    position: relative;
+    z-index: 1;
+    height: 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .wf-timeline-year {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--fade-heading, #333);
+  }
+
+  .wf-timeline-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--fade-heading, #333);
+    box-shadow: 0 0 0 4px var(--fade-bg, #fff);
+    margin-bottom: -6px;
+  }
+  .wf-timeline-content {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+  }
+  .wf-timeline-content .wf-img {
+    height: var(--hs-size);
+    width: var(--hs-size);
+    margin-bottom: 0;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .wf-timeline-content .label { font-size: 14px; color: var(--fade-muted, #666); }
+
+  .wf-hscroll-card {
+    width: var(--hs-size);
+    flex-shrink: 0;
+  }
+  .wf-hscroll-card .wf-img { height: var(--hs-size); margin-bottom: 8px; font-size: 14px; }
+  .wf-hscroll-card .label {
+    font-size: 14px;
+    color: var(--fade-muted, #666);
+    text-align: center;
+  }
+
+  .wf-oracle {
+    position: fixed;
+    right: 20px; bottom: 20px;
+    z-index: 900;
+    width: 92px; height: 92px;
+    border-radius: 50%;
+    background: #f0f5f0;
+    border: 2px dashed #9aba9e;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
+    font-size: 9px;
+    color: #4a684a;
+    padding: 10px;
+    line-height: 1.3;
+    cursor: pointer;
+    animation: wf-oracle-pulse 2.6s ease-in-out infinite;
+    transition: transform 0.2s ease;
+  }
+  body.home-only [data-goto]:not(.logo-box),
+  body.home-only .wf-nav-col a,
+  body.home-only .wf-footer-cols a,
+  body.home-only .wf-oracle { cursor: default; }
+  body.home-only .wf-nav-col a:hover:not(.current) { color: #666; font-weight: normal; }
+  body.home-only .wf-footer-cols a:hover { text-decoration: none; }
+  .wf-oracle:hover {
+    transform: scale(1.08) rotate(-4deg);
+    animation-play-state: paused;
+  }
+  @keyframes wf-oracle-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(122,158,126,0.35); }
+    50% { box-shadow: 0 0 0 12px rgba(122,158,126,0); }
+  }
+
+  .wf-pin-head { margin-bottom: 10px; }
+
+  .wf-group-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--fade-heading, #333);
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .wf-note { margin-bottom: 12px; }
+  .wf-note .wf-annotation { margin-left: 0; }
+  .wf-note.center { text-align: center; }
+
+  .wf-cta-row { text-align: right; margin-top: 12px; }
+  .wf-cta-row .wf-btn { margin: 0; font-size: 11px; }
+
+  .wf-brook-pin {
+    position: relative;
+    margin: 8px 0 12px;
+  }
+  .wf-brook-sticky {
+    position: sticky;
+    top: 0;
+    display: block;
+    background: transparent;
+    padding-top: 8px;
+  }
+  .wf-brook-map {
+    position: relative;
+
+    width: min(100%, calc((100vh - var(--nav-h, 0px) - var(--above-h, 0px) - 80px) * 400 / 240));
+    aspect-ratio: 400 / 240;
+    margin: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid rgba(122, 158, 126, 0.35);
+    background: #f2efe6;
+
+    isolation: isolate;
+  }
+  .wf-brook-map .wf-leaflet { position: absolute; inset: 0; }
+  .wf-brook-map svg { display: block; }
+
+  .wf-brook-map .leaflet-tile { filter: saturate(0.7) brightness(1.03); }  .wf-brook-map .leaflet-container, .wf-brook-map .leaflet-popup-content { font-family: Arial, Helvetica, sans-serif; }
+  .wf-brook-map .leaflet-popup-content { color: #1A1A18; margin: 10px 14px; }
+  .wf-map-pin {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.5);
+    transform-origin: bottom center;
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(.34,1.56,.64,1);
+  }
+  .wf-map-pin.in-view {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  .wf-route-pin {
+    position: relative;
+    margin: 8px 0 12px;
+  }
+  .wf-route-sticky {
+    position: sticky;
+    top: 0;
+    display: block;
+    background: transparent;
+    padding-top: 8px;
+  }
+  .wf-route-map {
+    position: relative;
+
+    width: min(100%, calc((100vh - var(--nav-h, 0px) - var(--above-h, 0px) - 80px) * 609 / 902));
+    aspect-ratio: 609 / 902;
+    margin: 0 auto;
+
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid rgba(122, 158, 126, 0.35);
+    background: #fff;
+  }
+  .wf-map-caption {
+    font-size: 11px;
+    color: var(--fade-muted, #666);
+    text-align: center;
+    margin: 8px 0;
+  }
+  .wf-route-map img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .wf-route-map svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .wf-route-path-bg {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.85;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+  }
+  .wf-route-path {
+    fill: none;
+    stroke: #b23b2e;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+  }
+  .wf-route-end {
+    fill: #b23b2e;
+    stroke: #fff;
+    stroke-width: 2;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .wf-route-end.in-view { opacity: 1; }
+
+  .wf-pdf-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+  .wf-pdf-grid .wf-img { height: 150px; }
+  .wf-pdf-viewer {
+    background: #e8e8e8;
+    border: 1px dashed #bbb;
+    height: 560px;
+    display: flex; align-items: center; justify-content: center;
+    color: #999; font-size: 12px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+
+  .wf-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .wf-textarea {
+    border: 1.5px solid #ccc;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 11px;
+    color: #6b6b6b;
+    background: #fff;
+    height: 70px;
+    margin-bottom: 12px;
+  }
+  .wf-input {
+    border: 1.5px solid #ccc;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 11px;
+    color: #6b6b6b;
+    background: #fff;
+    min-width: 160px;
+  }
+
+  .wf-strip {
+    background: #f5f5f0;
+    border: 1.5px solid #ddd;
+    border-radius: 6px;
+    padding: 20px 24px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .wf-strip-label { font-size: 12px; font-weight: 600; flex: 1; min-width: 120px; }
+
+  .wf-footer { margin-top: 0; }
+  .wf-footer-block {
+    background: #EDEAE0;
+    color: #0e1a26;
+    display: flex;
+    flex-direction: column;
+    gap: 80px;
+    padding: 36px 40px 24px;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+  .wf-footer-cols, .wf-footer-bottom {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .wf-footer-bottom { align-items: end; }
+  .wf-footer-cols a { display: block; color: inherit; text-decoration: none; cursor: pointer; }
+  .wf-footer-cols a:hover { text-decoration: underline; }
+  .wf-footer-friend { grid-column: span 2; display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .wf-footer-friend img { height: 120px; width: auto; display: block; }
+  .wf-footer-end { display: flex; justify-content: space-between; align-items: flex-end; padding-right: 110px; }
+  .wf-footer .wf-critter { margin: 0; border-color: rgba(14, 26, 38, 0.4); background: transparent; color: #0e1a26; }
+
+  .wf-breadcrumb {
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 20px;
+  }
+  .wf-breadcrumb span { color: #bbb; margin: 0 6px; }
+
+  .wf-annotation {
+    display: inline-block;
+    background: #fffbe6;
+    border: 1px solid #f0d060;
+    border-radius: 3px;
+    font-size: 10px;
+    color: #7a6000;
+    padding: 2px 6px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  .page-title-bar {
+    background: #222;
+    color: #ccc;
+    font-size: 11px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .page-title-bar strong { color: #fff; }
+  .page-title-bar .url { color: #666; font-family: monospace; font-size: 10px; }
+
+  #page-home .wf-body { max-width: 1440px; padding: 24px 48px 40px; }
+  #page-home .wf-divider { margin: 20px 0; }
+  #page-home .wf-body .wf-critter { margin: 12px auto; }
+  #page-home .wf-route-pin,
+  #page-home .wf-brook-pin { margin: 0 0 8px; }
+  #page-home .wf-hscroll-pin { margin: 0 0 8px; }
+  #page-home .wf-cta-row { margin-top: 8px; }
+
+  #page-home .wf-body .wf-text {
+    max-width: 680px;
+    -webkit-mask: linear-gradient(#000 0 0) top left / 100% calc(100% - 10px) no-repeat,
+                  linear-gradient(#000 0 0) bottom left / 62% 10px no-repeat;
+    mask: linear-gradient(#000 0 0) top left / 100% calc(100% - 10px) no-repeat,
+          linear-gradient(#000 0 0) bottom left / 62% 10px no-repeat;
+  }
+  #page-home .wf-body .wf-text.short { height: 26px; }
+  #page-home .wf-body .wf-text.medium { height: 42px; }
+
+  .wf-nav-menu-btn { display: none; }
+
+  @media (max-width: 760px) {
+    .page-title-bar { flex-wrap: wrap; gap: 2px 12px; }
+    .page-title-bar .url { word-break: break-all; }
+
+    .wf-nav { padding: 8px 16px; overflow: visible; }
+    .wf-nav .wf-nav-cols {
+      display: none;
+      position: absolute;
+      top: 100%; left: 0; right: 0;
+      background: #EDEAE0;
+      border-bottom: 2px solid #ddd;
+      padding: 12px 16px 16px;
+      gap: 24px;
+    }
+    .wf-nav.open .wf-nav-cols { display: flex; }
+    .wf-nav-col { flex: 1; min-width: 0; }
+    .wf-nav-col a { font-size: 13px; padding: 6px 0; cursor: pointer; }
+    .wf-nav.compact { padding-top: 4px; padding-bottom: 4px; }
+    .wf-nav.compact .logo-box img { height: 26px !important; }
+    .wf-nav-menu-btn {
+      display: block;
+      background: none;
+      border: 1.5px solid #bbb;
+      border-radius: 4px;
+      padding: 6px 12px;
+      font: inherit; font-size: 11px; font-weight: 600; color: #444;
+      cursor: pointer;
+    }
+
+    .wf-body, #page-home .wf-body { padding: 20px 16px 40px; }
+    .wf-h1 { font-size: 22px; }
+    .wf-annotation { margin-left: 0; max-width: 100%; }
+
+    .wf-hero { min-height: max(380px, 80svh); }
+    .wf-hero-content { padding: 48px 64px 40px; }
+    .wf-hero .wordmark-img { max-width: 240px; }
+    .wf-hero { --ruler-inset: 40px; }
+    .wf-depth-scale { left: 16px; }
+    .wf-depth-reading { top: 10px; right: 10px; }
+
+    .wf-grid-2, .wf-grid-2-1, .wf-grid-1-2, .wf-grid-3, .wf-form-grid { grid-template-columns: 1fr; gap: 12px; }
+    .wf-grid-4, .wf-grid-5, .wf-pdf-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .wf-pdf-grid .wf-img { height: 130px; }
+    .wf-input { min-width: 0; }
+    .wf-row { flex-direction: column; gap: 4px; }
+    .wf-row-label { width: auto; }
+    .wf-pdf-viewer { height: 420px; }
+
+    .wf-hscroll-track { padding: 0 16px; gap: 20px; }
+    .wf-hscroll-window {
+      -webkit-mask-image: linear-gradient(to right, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+      mask-image: linear-gradient(to right, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+    }
+    .wf-hscroll-pin { --hs-size: min(75vw, calc(100svh - 340px)); }
+
+    .wf-oracle { right: 12px; bottom: 12px; width: 76px; height: 76px; font-size: 9px; padding: 8px; }
+
+    .wf-route-map {
+      width: min(100%, calc((100svh - var(--nav-h, 0px) - var(--above-h, 0px) - 48px) * 609 / 902));
+    }
+    .wf-brook-map {
+      width: min(100%, calc((100svh - var(--nav-h, 0px) - var(--above-h, 0px) - 48px) * 3 / 4));
+      aspect-ratio: 3 / 4;
+    }
+
+    .wf-footer-block { padding: 24px 16px 20px; gap: 48px; font-size: 14px; }
+    .wf-footer-cols, .wf-footer-bottom { grid-template-columns: 1fr 1fr; gap: 28px 16px; }
+    .wf-footer-bottom { padding-bottom: 84px; }
+    .wf-footer-end { padding-right: 0; }
+    .wf-footer-friend img { height: 84px; }
+  }
+</style>
+</head>
+<body class="home-only">
+
+<div class="wf-oracle" role="button" tabindex="0">Floating Oracle: click for a random page</div>
+
+<main id="canvas">
+
+  <div class="page active" id="page-home">
+    <div class="page-title-bar">
+      <strong>Home</strong>
+      <span class="url">hobsonsconduittrust.org/</span>
+    </div>
+
+    <div class="wf-nav-inject" data-current="home"></div>
+
+    <div class="wf-hero">
+      <div class="wf-depth-scale" id="wf-depth-scale">
+        <div class="wf-depth-tick" style="bottom:100%"><span>2m</span></div>
+        <div class="wf-depth-tick" style="bottom:80%"><span>1.8m</span></div>
+        <div class="wf-depth-tick" style="bottom:60%"><span>1.6m</span></div>
+        <div class="wf-depth-tick" style="bottom:40%"><span>1.4m</span></div>
+        <div class="wf-depth-tick" style="bottom:20%"><span>1.2m</span></div>
+        <div class="wf-depth-tick" style="bottom:0%"><span>1m</span></div>
+      </div>
+
+      <div class="wf-depth-reading" id="wf-depth-reading">Water depth:</div>
+
+      <div class="wf-hero-content">
+        <img class="wordmark-img" src="wireframe-assets/bingbong.svg" alt="Hobson's Conduit Trust" />
+        <div class="wf-hero-intro">Short intro line describing the Trust's purpose</div>
+      </div>
+
+      <div class="wf-water-overlay" id="wf-water-overlay"><div class="wf-wave"></div><div class="wf-bubbles" data-count="16" data-rise="100,300" data-size="2,5" data-opacity="0.45,0.95"></div></div>
+    </div>
+
+    <div class="wf-depth-fade" id="wf-depth-fade">
+    <div class="wf-sunlight" aria-hidden="true"><canvas></canvas></div>
+    <div class="wf-water-particles" aria-hidden="true"></div>
+    <div class="wf-upper-life" aria-hidden="true"><div class="wf-bubbles" data-count="160" data-from="0" data-rise="200,500" data-size="2,5" data-opacity="0.45,0.95"></div></div>
+    <div style="text-align:center;padding:8px 0;position:relative;z-index:1;"><span class="wf-annotation">Water rises from the bottom on load to the live depth reading. Shown here as a random value each refresh, for demonstration</span></div>
+
+    <div class="wf-body">
+
+      <div class="wf-band" data-band="surface" data-tone-group>
+
+      <div class="wf-hscroll-pin">
+        <div class="wf-hscroll-sticky">
+          <div class="wf-pin-head">
+            <div class="wf-group-title">The Conduit</div>
+            <div class="wf-note center"><span class="wf-annotation">Pins in place while you scroll through the years below, then releases and continues down the page</span></div>
+          </div>
+          <div class="wf-hscroll-window">
+          <div class="wf-hscroll-track wf-timeline-track">
+            <div class="wf-timeline-item">
+              <div class="wf-timeline-head"><div class="wf-timeline-year">1574</div><div class="wf-timeline-dot"></div></div>
+              <div class="wf-timeline-content"><div class="wf-img">Icon</div><div class="label">Annotated Timeline</div></div>
+            </div>
+            <div class="wf-timeline-item">
+              <div class="wf-timeline-head"><div class="wf-timeline-year">1610</div><div class="wf-timeline-dot"></div></div>
+              <div class="wf-timeline-content"><div class="wf-img">Icon</div><div class="label">Annotated Timeline</div></div>
+            </div>
+            <div class="wf-timeline-item">
+              <div class="wf-timeline-head"><div class="wf-timeline-year">1614</div><div class="wf-timeline-dot"></div></div>
+              <div class="wf-timeline-content"><div class="wf-img">Icon</div><div class="label">Annotated Timeline</div></div>
+            </div>
+            <div class="wf-timeline-item">
+              <div class="wf-timeline-head"><div class="wf-timeline-year">1631</div><div class="wf-timeline-dot"></div></div>
+              <div class="wf-timeline-content"><div class="wf-img">Icon</div><div class="label">Annotated Timeline</div></div>
+            </div>
+            <div class="wf-timeline-item">
+              <div class="wf-timeline-head"><div class="wf-timeline-year">1702</div><div class="wf-timeline-dot"></div></div>
+              <div class="wf-timeline-content"><div class="wf-img">Icon</div><div class="label">Annotated Timeline</div></div>
+            </div>
+            <div class="wf-timeline-item">
+              <div class="wf-timeline-head"><div class="wf-timeline-year">1788</div><div class="wf-timeline-dot"></div></div>
+              <div class="wf-timeline-content"><div class="wf-img">Icon</div><div class="label">Annotated Timeline</div></div>
+            </div>
+            <div class="wf-timeline-item">
+              <div class="wf-timeline-head"><div class="wf-timeline-year">1855</div><div class="wf-timeline-dot"></div></div>
+              <div class="wf-timeline-content"><div class="wf-img">Icon</div><div class="label">Annotated Timeline</div></div>
+            </div>
+            <div class="wf-timeline-item">
+              <div class="wf-timeline-head"><div class="wf-timeline-year">1898</div><div class="wf-timeline-dot"></div></div>
+              <div class="wf-timeline-content"><div class="wf-img">Icon</div><div class="label">Annotated Timeline</div></div>
+            </div>
+            <div class="wf-timeline-item">
+              <div class="wf-timeline-head"><div class="wf-timeline-year">1960</div><div class="wf-timeline-dot"></div></div>
+              <div class="wf-timeline-content"><div class="wf-img">Icon</div><div class="label">Annotated Timeline</div></div>
+            </div>
+            <div class="wf-timeline-item">
+              <div class="wf-timeline-head"><div class="wf-timeline-year">2001</div><div class="wf-timeline-dot"></div></div>
+              <div class="wf-timeline-content"><div class="wf-img">Icon</div><div class="label">Annotated Timeline</div></div>
+            </div>
+            <div class="wf-timeline-item">
+              <div class="wf-timeline-head"><div class="wf-timeline-year">2020</div><div class="wf-timeline-dot"></div></div>
+              <div class="wf-timeline-content"><div class="wf-img">Icon</div><div class="label">Annotated Timeline</div></div>
+            </div>
+          </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wf-text medium"></div>
+      <div class="wf-cta-row"><span class="wf-btn outline">Read More History</span></div>
+      </div>
+
+      <div class="wf-band-break" aria-hidden="true"></div>
+
+      <div class="wf-band" data-band="shallows">
+
+      <div>
+        <div class="wf-route-pin">
+          <div class="wf-route-sticky">
+            <div class="wf-pin-head">
+              <div class="wf-h2" style="margin-top:0;">Route</div>
+              <div class="wf-note"><span class="wf-annotation">Pins once the full map is in frame, draws the route as you keep scrolling, then releases</span></div>
+            </div>
+            <div class="wf-route-map">
+              <img src="wireframe-assets/route-map.png" alt="Illustrated map of Southern and Central Cambridge showing the Hobson's Conduit route from Nine Wells to the city centre" />
+              <svg viewBox="0 0 609 902" preserveAspectRatio="none">
+                <path class="wf-route-path-bg" pathLength="1000" d="M432,784 C385,760 350,730 345,690 C340,650 365,620 352,580 C340,545 300,548 262,540 C232,534 248,490 245,450 C242,410 236,375 233,340 C230,305 226,270 218,235 C210,200 195,165 175,130" />
+                <path class="wf-route-path" pathLength="1000" d="M432,784 C385,760 350,730 345,690 C340,650 365,620 352,580 C340,545 300,548 262,540 C232,534 248,490 245,450 C242,410 236,375 233,340 C230,305 226,270 218,235 C210,200 195,165 175,130" />
+                <circle class="wf-route-end" cx="175" cy="130" r="7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="wf-cta-row"><span class="wf-btn">Take The Walk</span></div>
+      </div>
+      </div>
+
+      <div class="wf-band-break" aria-hidden="true"></div>
+
+      <div class="wf-band" data-band="mid">
+
+      <div class="wf-brook-pin">
+        <div class="wf-brook-sticky">
+          <div class="wf-pin-head">
+            <div class="wf-h2" style="margin-top:0;">Brook</div>
+            <div class="wf-note"><span class="wf-annotation">Example map: pins once fully in frame, sightings pop in as you keep scrolling, then releases</span></div>
+          </div>
+          <div class="wf-brook-map-inject"></div>
+        </div>
+      </div>
+      <div class="wf-cta-row"><span class="wf-btn">Add Your Sightings</span></div>
+      </div>
+
+      <div class="wf-band-break" aria-hidden="true"></div>
+
+      <div class="wf-band" data-band="deep">
+
+      <div class="wf-hscroll-pin">
+        <div class="wf-hscroll-sticky">
+          <div class="wf-pin-head">
+            <div class="wf-h2" style="margin-top:0;">Chalkstreams</div>
+            <div class="wf-note"><span class="wf-annotation">Pins in place and scrolls horizontally through the cards, then releases</span></div>
+          </div>
+          <div class="wf-hscroll-window">
+          <div class="wf-hscroll-track">
+            <div class="wf-hscroll-card"><div class="wf-img">Chalkstreams<br>Info Card</div><div class="label">Chalkstreams Info Card</div></div>
+            <div class="wf-hscroll-card"><div class="wf-img">Chalkstreams<br>Info Card</div><div class="label">Chalkstreams Info Card</div></div>
+            <div class="wf-hscroll-card"><div class="wf-img">Chalkstreams<br>Info Card</div><div class="label">Chalkstreams Info Card</div></div>
+            <div class="wf-hscroll-card"><div class="wf-img">Chalkstreams<br>Info Card</div><div class="label">Chalkstreams Info Card</div></div>
+            <div class="wf-hscroll-card"><div class="wf-img">Chalkstreams<br>Info Card</div><div class="label">Chalkstreams Info Card</div></div>
+            <div class="wf-hscroll-card"><div class="wf-img">Chalkstreams<br>Info Card</div><div class="label">Chalkstreams Info Card</div></div>
+          </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wf-text medium"></div>
+      <div class="wf-cta-row"><span class="wf-btn outline">Read More Chalkstreams</span></div>
+      <div class="wf-critter">illustrated critter</div>
+      </div>
+
+      <div class="wf-band-break" aria-hidden="true"></div>
+
+      <div class="wf-band" data-band="bed">
+
+      <div class="wf-group-title">The Trust</div>
+
+      <div class="wf-h2" style="margin-top:16px;">Research</div>
+      <div class="wf-grid-2">
+        <div class="wf-img" style="height:180px;">Educational Resource<br>PDF Cover Image</div>
+        <div class="wf-img" style="height:180px;">Educational Resource<br>PDF Cover Image</div>
+      </div>
+      <div class="wf-cta-row"><span class="wf-btn outline" data-goto="research">Read More Reports</span></div>
+
+      <hr class="wf-divider" />
+
+      <div class="wf-h2" style="margin-top:0;">Advocacy</div>
+      <div class="wf-grid-2">
+        <div class="wf-img" style="height:180px;">Impact PDF<br>Cover Image</div>
+        <div class="wf-img" style="height:180px;">Impact PDF<br>Cover Image</div>
+      </div>
+      <div class="wf-cta-row"><span class="wf-btn outline" data-goto="advocacy">Read More Reports</span></div>
+
+      <hr class="wf-divider" />
+
+      <div class="wf-h2" style="margin-top:0;">Conservation</div>
+      <div class="wf-grid-4">
+        <div><div class="wf-img" style="height:70px;"></div><div class="wf-text short"></div><span style="font-size:10px;text-decoration:underline;color:var(--fade-muted,#666);">Read More</span></div>
+        <div><div class="wf-img" style="height:70px;"></div><div class="wf-text short"></div><span style="font-size:10px;text-decoration:underline;color:var(--fade-muted,#666);">Read More</span></div>
+        <div><div class="wf-img" style="height:70px;"></div><div class="wf-text short"></div><span style="font-size:10px;text-decoration:underline;color:var(--fade-muted,#666);">Read More</span></div>
+        <div><div class="wf-img" style="height:70px;"></div><div class="wf-text short"></div><span style="font-size:10px;text-decoration:underline;color:var(--fade-muted,#666);">Read More</span></div>
+      </div>
+
+      <hr class="wf-divider" />
+
+      <div class="wf-h2" style="margin-top:0;">Latest News</div>
+      <div class="wf-grid-2-1">
+        <div class="wf-img" style="height:150px;">Blog image</div>
+        <div>
+          <div class="wf-h3">Quiis nostrud exerci tation ullamcorper suscipit lobortis</div>
+          <div class="wf-text medium"></div>
+          <span style="font-size:10px;text-decoration:underline;color:var(--fade-muted,#666);">Read More</span>
+        </div>
+      </div>
+      <div class="wf-grid-2-1" style="margin-top:12px;">
+        <div class="wf-img" style="height:150px;">Blog image</div>
+        <div>
+          <div class="wf-h3">Quiis nostrud exerci tation ullamcorper suscipit lobortis</div>
+          <div class="wf-text medium"></div>
+          <span style="font-size:10px;text-decoration:underline;color:var(--fade-muted,#666);">Read More</span>
+        </div>
+      </div>
+      <div class="wf-cta-row"><span class="wf-btn outline">See All News</span></div>
+
+      <hr class="wf-divider" />
+
+      <div class="wf-h2" style="margin-top:0;">Get In Touch / Volunteer</div>
+      <div class="wf-grid-2">
+        <div>
+          <div class="wf-form-grid">
+            <div class="wf-input">Name</div>
+            <div class="wf-input">Email</div>
+          </div>
+          <div class="wf-textarea">Message</div>
+          <div style="font-size:9px;color:var(--fade-muted,#aaa);margin-bottom:10px;">☐ GDPR consent checkbox</div>
+          <span class="wf-btn">Send Us A Message</span>
+        </div>
+        <div class="wf-img" style="height:200px;">Supporting image</div>
+      </div>
+      <div class="wf-critter">illustrated critter</div>
+      </div>
+
+    </div>
+    </div>
+
+    <div class="wf-footer-inject"></div>
+  </div>
+
+  <div class="page" id="page-conduit">
+    <div class="page-title-bar">
+      <strong>The Conduit</strong>
+      <span class="url">hobsonsconduittrust.org/the-conduit</span>
+    </div>
+
+    <div class="wf-nav-inject" data-current="conduit"></div>
+
+    <div class="wf-body">
+      <div class="wf-eyebrow">History</div>
+      <div class="wf-h1">The Conduit</div>
+      <div style="font-size:11px;color:#999;margin-top:-12px;margin-bottom:16px;">History blog / Thomas Hobson</div>
+
+      <div class="wf-text long"></div>
+      <div class="wf-text medium"></div>
+
+      <div class="wf-img" style="height:220px;margin-top:16px;">Where The Water Went (map)</div>
+
+      <div class="wf-h3">Quiis nostrud exerci tation ullamcorper suscipit lobortis</div>
+      <div class="wf-text long"></div>
+
+      <div class="wf-grid-1-2" style="margin-top:12px;">
+        <div>
+          <div class="wf-h3">Quiis nostrud exerci tation ullamcorper suscipit lobortis</div>
+          <div class="wf-text long"></div>
+        </div>
+        <div class="wf-img" style="height:160px;">Water History Widget</div>
+      </div>
+    </div>
+
+    <div class="wf-footer-inject"></div>
+  </div>
+
+  <div class="page" id="page-route">
+    <div class="page-title-bar">
+      <strong>Route</strong>
+      <span class="url">hobsonsconduittrust.org/the-conduit/route</span>
+    </div>
+
+    <div class="wf-nav-inject" data-current="route"></div>
+
+    <div class="wf-body">
+      <div class="wf-eyebrow">The Conduit</div>
+      <div class="wf-h1">Route</div>
+
+      <div class="wf-map" style="height:260px;">Google Map</div>
+      <div class="wf-text medium"></div>
+
+      <div class="wf-h3" style="margin-top:20px;">Quiis nostrud exerci tation ullamcorper suscipit lobortis</div>
+      <div class="wf-text long"></div>
+
+      <div class="wf-grid-1-2" style="margin-top:12px;">
+        <div>
+          <div class="wf-h3">Quiis nostrud exerci tation ullamcorper suscipit lobortis</div>
+          <div class="wf-text long"></div>
+        </div>
+        <div class="wf-img" style="height:160px;">Same route, then / now images</div>
+      </div>
+    </div>
+
+    <div class="wf-footer-inject"></div>
+  </div>
+
+  <div class="page" id="page-brook">
+    <div class="page-title-bar">
+      <strong>Brook</strong>
+      <span class="url">hobsonsconduittrust.org/the-conduit/brook</span>
+    </div>
+
+    <div class="wf-nav-inject" data-current="brook"></div>
+
+    <div class="wf-body">
+      <div class="wf-brook-pin">
+        <div class="wf-brook-sticky">
+          <div class="wf-pin-head">
+            <div class="wf-eyebrow">The Conduit</div>
+            <div class="wf-h1">Brook</div>
+            <div style="text-align:center;"><span class="wf-annotation">Example map: pins once fully in frame, sightings pop in as you keep scrolling, then releases</span></div>
+          </div>
+          <div class="wf-brook-map-inject"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wf-footer-inject"></div>
+  </div>
+
+  <div class="page" id="page-chalkstreams">
+    <div class="page-title-bar">
+      <strong>Chalkstreams</strong>
+      <span class="url">hobsonsconduittrust.org/the-conduit/chalkstreams</span>
+    </div>
+
+    <div class="wf-nav-inject" data-current="chalkstreams"></div>
+
+    <div class="wf-body">
+      <div class="wf-eyebrow">The Conduit</div>
+      <div class="wf-h1">Chalkstreams</div>
+      <div style="font-size:11px;color:#999;margin-top:-12px;margin-bottom:16px;">An ecosystem. What makes them unique · In the UK · England hosts the majority</div>
+
+      <div style="border-top:1px solid #e8e8e8;margin-bottom:16px;">
+        <div class="wf-row"><div class="wf-row-label">Hobson's Brook through time</div><div class="wf-row-content" style="font-size:11px;color:#888;">From the Conduit head to current day and advocacy</div></div>
+        <div class="wf-row"><div class="wf-row-label">Infrastructure work</div><div class="wf-row-content" style="font-size:11px;color:#888;">Ongoing repairs and advocacy</div></div>
+        <div class="wf-row"><div class="wf-row-label">Greater Cambridge Chalk Stream Project</div><div class="wf-row-content" style="font-size:11px;color:#888;">Future plans</div></div>
+        <div class="wf-row"><div class="wf-row-label">Sustainability report</div><div class="wf-row-content" style="font-size:11px;color:#888;">Latest data</div></div>
+      </div>
+
+      <div class="wf-img" style="height:200px;"></div>
+
+      <div class="wf-h3" style="margin-top:20px;">Quiis nostrud exerci tation ullamcorper suscipit lobortis</div>
+      <div class="wf-text long"></div>
+
+      <div class="wf-grid-1-2" style="margin-top:12px;">
+        <div>
+          <div class="wf-h3">Quiis nostrud exerci tation ullamcorper suscipit lobortis</div>
+          <div class="wf-text long"></div>
+        </div>
+        <div class="wf-img" style="height:160px;"></div>
+      </div>
+    </div>
+
+    <div class="wf-footer-inject"></div>
+  </div>
+
+  <div class="page" id="page-research">
+    <div class="page-title-bar">
+      <strong>Research</strong>
+      <span class="url">hobsonsconduittrust.org/the-trust/research</span>
+    </div>
+
+    <div class="wf-nav-inject" data-current="research"></div>
+
+    <div class="wf-body">
+      <div class="wf-eyebrow">The Trust</div>
+      <div class="wf-h1">Research</div>
+
+      <div class="wf-pdf-grid">
+        <div><div class="wf-img">Educational Resource<br>PDF Cover Image</div></div>
+        <div><div class="wf-img">Educational Resource<br>PDF Cover Image</div></div>
+        <div><div class="wf-img">Educational Resource<br>PDF Cover Image</div></div>
+        <div><div class="wf-img">Educational Resource<br>PDF Cover Image</div></div>
+        <div><div class="wf-img">Educational Resource<br>PDF Cover Image</div></div>
+        <div><div class="wf-img">Educational Resource<br>PDF Cover Image</div></div>
+      </div>
+    </div>
+
+    <div class="wf-footer-inject"></div>
+  </div>
+
+  <div class="page" id="page-edu-resource">
+    <div class="page-title-bar">
+      <strong>Educational Resource (PDF template)</strong>
+      <span class="url">hobsonsconduittrust.org/the-trust/research/[resource-slug]</span>
+    </div>
+
+    <div class="wf-nav-inject" data-current="research"></div>
+
+    <div class="wf-body">
+      <div class="wf-breadcrumb">← Research</div>
+      <div class="wf-h1" style="font-size:22px;">Educational Resource PDF</div>
+      <div class="wf-pdf-viewer">Full PDF viewer / embed</div>
+      <span class="wf-btn outline">Download PDF</span>
+    </div>
+
+    <div class="wf-footer-inject"></div>
+  </div>
+
+  <div class="page" id="page-advocacy">
+    <div class="page-title-bar">
+      <strong>Advocacy</strong>
+      <span class="url">hobsonsconduittrust.org/the-trust/advocacy</span>
+    </div>
+
+    <div class="wf-nav-inject" data-current="advocacy"></div>
+
+    <div class="wf-body">
+      <div class="wf-eyebrow">The Trust</div>
+      <div class="wf-h1">Advocacy</div>
+
+      <div class="wf-pdf-grid">
+        <div><div class="wf-img">Impact PDF<br>Cover Image</div></div>
+        <div><div class="wf-img">Impact PDF<br>Cover Image</div></div>
+        <div><div class="wf-img">Impact PDF<br>Cover Image</div></div>
+        <div><div class="wf-img">Impact PDF<br>Cover Image</div></div>
+        <div><div class="wf-img">Impact PDF<br>Cover Image</div></div>
+        <div><div class="wf-img">Impact PDF<br>Cover Image</div></div>
+      </div>
+    </div>
+
+    <div class="wf-footer-inject"></div>
+  </div>
+
+  <div class="page" id="page-impact-report">
+    <div class="page-title-bar">
+      <strong>Impact Report (PDF template)</strong>
+      <span class="url">hobsonsconduittrust.org/the-trust/advocacy/[report-slug]</span>
+    </div>
+
+    <div class="wf-nav-inject" data-current="advocacy"></div>
+
+    <div class="wf-body">
+      <div class="wf-breadcrumb">← Advocacy</div>
+      <div class="wf-h1" style="font-size:22px;">Impact Report PDF</div>
+      <div class="wf-pdf-viewer">Full PDF viewer / embed</div>
+      <span class="wf-btn outline">Download PDF</span>
+    </div>
+
+    <div class="wf-footer-inject"></div>
+  </div>
+
+  <div class="page" id="page-conservation">
+    <div class="page-title-bar">
+      <strong>Conservation</strong>
+      <span class="url">hobsonsconduittrust.org/the-trust/conservation</span>
+    </div>
+
+    <div class="wf-nav-inject" data-current="conservation"></div>
+
+    <div class="wf-body">
+      <div class="wf-eyebrow">The Trust</div>
+      <div class="wf-h1">Conservation</div>
+
+      <div class="wf-grid-3">
+        <div class="wf-card"><div class="wf-img" style="height:100px;"></div><div class="wf-text medium"></div><span style="font-size:10px;text-decoration:underline;color:var(--fade-muted,#666);">Read More</span></div>
+        <div class="wf-card"><div class="wf-img" style="height:100px;"></div><div class="wf-text medium"></div><span style="font-size:10px;text-decoration:underline;color:var(--fade-muted,#666);">Read More</span></div>
+        <div class="wf-card"><div class="wf-img" style="height:100px;"></div><div class="wf-text medium"></div><span style="font-size:10px;text-decoration:underline;color:var(--fade-muted,#666);">Read More</span></div>
+        <div class="wf-card"><div class="wf-img" style="height:100px;"></div><div class="wf-text medium"></div><span style="font-size:10px;text-decoration:underline;color:var(--fade-muted,#666);">Read More</span></div>
+        <div class="wf-card"><div class="wf-img" style="height:100px;"></div><div class="wf-text medium"></div><span style="font-size:10px;text-decoration:underline;color:var(--fade-muted,#666);">Read More</span></div>
+        <div class="wf-card"><div class="wf-img" style="height:100px;"></div><div class="wf-text medium"></div><span style="font-size:10px;text-decoration:underline;color:var(--fade-muted,#666);">Read More</span></div>
+      </div>
+    </div>
+
+    <div class="wf-footer-inject"></div>
+  </div>
+
+  <div class="page" id="page-volunteer">
+    <div class="page-title-bar">
+      <strong>Volunteer</strong>
+      <span class="url">hobsonsconduittrust.org/the-trust/volunteer</span>
+    </div>
+
+    <div class="wf-nav-inject" data-current="volunteer"></div>
+
+    <div class="wf-body">
+      <div class="wf-eyebrow">The Trust</div>
+      <div class="wf-h1">Get In Touch / Volunteer</div>
+
+      <div class="wf-grid-2">
+        <div>
+          <div class="wf-form-grid">
+            <div class="wf-input">Name</div>
+            <div class="wf-input">Email</div>
+          </div>
+          <div class="wf-textarea">Message</div>
+          <div style="font-size:9px;color:#aaa;margin-bottom:10px;">☐ GDPR consent checkbox</div>
+          <span class="wf-btn">Send Us A Message</span>
+        </div>
+        <div class="wf-img" style="height:220px;">Supporting image</div>
+      </div>
+    </div>
+
+    <div class="wf-footer-inject"></div>
+  </div>
+
+  <div class="page" id="page-blog-post">
+    <div class="page-title-bar">
+      <strong>Blog Post (template)</strong>
+      <span class="url">hobsonsconduittrust.org/blog/[post-slug]</span>
+    </div>
+
+    <div class="wf-nav-inject" data-current=""></div>
+
+    <div class="wf-body narrow">
+      <div class="wf-breadcrumb">← All blog posts</div>
+      <div class="wf-img" style="height:260px;">Blog Post image</div>
+
+      <div class="wf-h3" style="font-size:16px;margin-top:16px;">Quiis nostrud exerci tation ullamcorper suscipit lobortis</div>
+      <div class="wf-text long"></div>
+      <div class="wf-text medium"></div>
+
+      <div class="wf-h3" style="font-size:16px;margin-top:20px;">Quiis nostrud exerci tation ullamcorper suscipit lobortis</div>
+      <div class="wf-text long"></div>
+      <div class="wf-text medium"></div>
+    </div>
+
+    <div class="wf-footer-inject"></div>
+  </div>
+
+</main>
+
+<script>
+  const NAV_COLS_HTML = `
+    <div class="wf-nav-cols">
+      <div class="wf-nav-col">
+        <div class="wf-nav-col-title">The Conduit</div>
+        <div class="wf-nav-links">
+          <a data-key="conduit">Conduit</a>
+          <a data-key="route">Route</a>
+          <a data-key="brook">Brook</a>
+          <a data-key="chalkstreams">Chalkstreams</a>
+        </div>
+      </div>
+      <div class="wf-nav-col">
+        <div class="wf-nav-col-title">The Trust</div>
+        <div class="wf-nav-links">
+          <a data-key="research">Research</a>
+          <a data-key="advocacy">Advocacy</a>
+          <a data-key="conservation">Conservation</a>
+          <a data-key="volunteer">Volunteer</a>
+        </div>
+      </div>
+    </div>
+  `
+
+  const FOOTER_HTML = `
+    <div class="wf-footer">
+      <div class="wf-footer-block">
+        <div class="wf-footer-cols">
+          <div>
+            <a data-goto="conduit">The Conduit</a>
+            <a data-goto="route">Route</a>
+            <a data-goto="brook">Brook</a>
+            <a data-goto="chalkstreams">Chalkstreams</a>
+          </div>
+          <div>
+            <a data-goto="research">Research</a>
+            <a data-goto="advocacy">Advocacy</a>
+            <a data-goto="conservation">Conservation</a>
+            <a data-goto="volunteer">Volunteer</a>
+            <a data-goto="blog-post">News</a>
+          </div>
+          <div class="wf-footer-friend">
+            <div><a>Become a Friend</a><a>Donate</a></div>
+            <img src="wireframe-assets/little-logo-navy.svg" alt="Hobson's Conduit Trust" />
+          </div>
+        </div>
+        <div class="wf-footer-bottom">
+          <div>© 2026 Hobson's Conduit Trust<br>Registered charity no. 204644</div>
+          <div>Bringing fresh water into the city of Cambridge since 1609</div>
+          <div class="wf-footer-end"><div class="wf-critter">illustrated critter</div></div>
+        </div>
+      </div>
+    </div>
+  `
+
+  const BROOK_MAP_HTML = `
+    <div class="wf-brook-map"><div class="wf-leaflet"></div></div>
+  `
+
+  const LANDMARK_PIN = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="44" viewBox="0 0 32 44">
+    <path d="M16 2 C23 2, 30 9, 30 16 C30 25, 16 42, 16 42 C16 42, 2 25, 2 16 C2 9, 9 2, 16 2Z" fill="#8A7230"/>
+    <path d="M16 8 Q21 13 19 20 Q16 28 16 36 Q16 28 13 20 Q11 13 16 8Z" fill="#6B5520" opacity="0.5"/>
+    <circle cx="16" cy="16" r="5" fill="#F5F0E0" opacity="0.95"/>
+  </svg>`
+
+  const SIGHTING_PIN = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="40" viewBox="0 0 28 40">
+    <path d="M14 2 C20 2, 26 8, 26 14 C26 22, 14 38, 14 38 C14 38, 2 22, 2 14 C2 8, 8 2, 14 2Z" fill="#7A9E7E"/>
+    <path d="M14 8 Q18 12 16 18 Q14 24 14 32 Q14 24 12 18 Q10 12 14 8Z" fill="#5C7A5E" opacity="0.5"/>
+    <circle cx="14" cy="14" r="4" fill="#F5F0E0" opacity="0.9"/>
+  </svg>`
+
+  const BROOK_LANDMARKS = [
+    { lat: 52.19807649755365, lng: 0.12237153558209668, name: 'Conduit Head', desc: 'The historic source of Hobson\'s Conduit, built in 1614.' },
+    { lat: 52.16819907011463, lng: 0.12722072886835434, name: 'Nine Wells', desc: 'The chalk spring at Nine Wells, the natural source of the brook.' },
+  ]
+
+  const BROOK_SIGHTINGS = [
+    { lat: 52.1712, lng: 0.1268, species: 'Brown trout' },
+    { lat: 52.1748, lng: 0.1279, species: 'Kingfisher' },
+    { lat: 52.1786, lng: 0.1287, species: 'Water vole' },
+    { lat: 52.1832, lng: 0.1290, species: 'Grey heron' },
+    { lat: 52.1878, lng: 0.1279, species: 'Banded demoiselle' },
+    { lat: 52.1926, lng: 0.1252, species: 'Little egret' },
+  ]
+
+  const brookMaps = []
+
+  function initBrookMaps() {
+    if (typeof L === 'undefined') return
+    document.querySelectorAll('.wf-brook-map .wf-leaflet').forEach(el => {
+      const map = L.map(el, {
+        maxBounds: L.latLngBounds([52.148, 0.098], [52.212, 0.155]),
+        maxBoundsViscosity: 1.0,
+        minZoom: 13,
+        zoomSnap: 0.25,
+        scrollWheelZoom: false,
+        dragging: !L.Browser.mobile,
+      })
+
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles © <a href="https://www.esri.com/">Esri</a>. Sources: Esri, HERE, Garmin, © OpenStreetMap contributors, and the GIS User Community',
+        maxZoom: 19,
+      }).addTo(map)
+
+      const landmarkIcon = L.divIcon({ className: '', html: LANDMARK_PIN, iconSize: [32, 44], iconAnchor: [16, 44], popupAnchor: [0, -44] })
+      BROOK_LANDMARKS.forEach(({ lat, lng, name, desc }) => {
+        L.marker([lat, lng], { icon: landmarkIcon, zIndexOffset: 1000 })
+          .bindPopup(`<strong>${name}</strong><p style="font-size:0.85em;margin:4px 0 0;">${desc}</p>`)
+          .addTo(map)
+      })
+
+      const sightingIcon = L.divIcon({ className: '', html: `<div class="wf-map-pin">${SIGHTING_PIN}</div>`, iconSize: [28, 40], iconAnchor: [14, 40], popupAnchor: [0, -40] })
+      BROOK_SIGHTINGS.forEach(({ lat, lng, species }) => {
+        L.marker([lat, lng], { icon: sightingIcon })
+          .bindPopup(`<strong>${species}</strong><p style="font-size:0.8em;color:#5C5C50;margin:2px 0 0;">Example sighting</p>`)
+          .addTo(map)
+      })
+
+      map.fitBounds(L.latLngBounds(BROOK_LANDMARKS.map(l => [l.lat, l.lng])), { padding: [40, 40] })
+      brookMaps.push(map)
+
+      if (window.ResizeObserver) {
+        new ResizeObserver(() => {
+          if (!el.offsetWidth) return
+          map.invalidateSize()
+          map.fitBounds(L.latLngBounds(BROOK_LANDMARKS.map(l => [l.lat, l.lng])), { padding: [40, 40] })
+        }).observe(el)
+      }
+    })
+  }
+
+  function refreshBrookMaps() {
+    brookMaps.forEach(map => {
+      if (!map.getContainer().offsetWidth) return
+      map.invalidateSize()
+      map.fitBounds(L.latLngBounds(BROOK_LANDMARKS.map(l => [l.lat, l.lng])), { padding: [40, 40] })
+    })
+  }
+
+  document.querySelectorAll('.wf-nav-inject').forEach(el => {
+    const current = el.dataset.current
+    el.outerHTML = `<div class="wf-nav-wrap"><div class="wf-nav"><div class="logo-box"><img src="wireframe-assets/little-logo.svg" alt="Hobson's Conduit Trust" /></div><button type="button" class="wf-nav-menu-btn" aria-expanded="false">☰ Menu</button>${NAV_COLS_HTML.replace(
+      new RegExp(`data-key="${current}"`), `data-key="${current}" class="current"`
+    )}</div></div>`
+  })
+
+  document.querySelectorAll('.wf-nav-menu-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const open = btn.closest('.wf-nav').classList.toggle('open')
+      btn.setAttribute('aria-expanded', open)
+    })
+  })
+
+  document.querySelectorAll('.wf-footer-inject').forEach(el => {
+    el.outerHTML = FOOTER_HTML
+  })
+
+  document.querySelectorAll('.wf-brook-map-inject').forEach(el => {
+    el.outerHTML = BROOK_MAP_HTML
+  })
+  initBrookMaps()
+
+  ;(function () {
+    const overlay = document.getElementById('wf-water-overlay')
+    const reading = document.getElementById('wf-depth-reading')
+    if (!overlay) return
+
+    const depth = 1 + Math.random()
+    const frac = (depth - 1) / (2 - 1)
+
+    if (reading) reading.textContent = 'Water depth: ' + depth.toFixed(2) + 'm (example)'
+
+    const height = `calc(var(--ruler-inset) + (100% - 2 * var(--ruler-inset)) * ${frac.toFixed(4)} - 12px)`
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => { overlay.style.height = height })
+    })
+  })()
+
+
+  const BROOK_SCROLL_BUDGET = 900
+
+  function layoutBrookMaps() {
+    document.querySelectorAll('.wf-brook-pin').forEach(pin => {
+      const sticky = pin.querySelector('.wf-brook-sticky')
+      const map = pin.querySelector('.wf-brook-map')
+      const head = pin.querySelector('.wf-pin-head')
+      if (!sticky || !map) return
+
+      const page = pin.closest('.page')
+      const nav = page ? page.querySelector('.wf-nav') : null
+      const navOffset = nav ? nav.offsetHeight : 0
+      sticky.style.top = navOffset + 'px'
+      pin.style.setProperty('--nav-h', navOffset + 'px')
+      pin.style.setProperty('--above-h', (head ? head.offsetHeight : 0) + 'px')
+
+      const h = sticky.getBoundingClientRect().height
+      pin.style.height = (h + BROOK_SCROLL_BUDGET) + 'px'
+
+      pin.dataset.navOffset = navOffset
+    })
+  }
+
+  function updateBrookMaps() {
+    document.querySelectorAll('.wf-brook-pin').forEach(pin => {
+      const sticky = pin.querySelector('.wf-brook-sticky')
+      const map = pin.querySelector('.wf-brook-map')
+      if (!sticky || !map) return
+      const pins = map.querySelectorAll('.wf-map-pin')
+      if (!pins.length) return
+
+      const navOffset = Number(pin.dataset.navOffset || 0)
+      const scrollable = pin.offsetHeight - sticky.offsetHeight
+      if (scrollable <= 0) return
+
+      const progress = Math.max(0, Math.min(1, (navOffset - pin.getBoundingClientRect().top) / scrollable))
+      pins.forEach((p, i) => {
+        const threshold = 0.08 + 0.54 * (pins.length > 1 ? i / (pins.length - 1) : 0)
+        p.classList.toggle('in-view', progress >= threshold)
+      })
+    })
+  }
+
+  const ROUTE_SCROLL_BUDGET = 600
+
+  function layoutRouteMaps() {
+    document.querySelectorAll('.wf-route-pin').forEach(pin => {
+      const sticky = pin.querySelector('.wf-route-sticky')
+      const map = pin.querySelector('.wf-route-map')
+      const head = pin.querySelector('.wf-pin-head')
+      if (!sticky || !map) return
+
+      const page = pin.closest('.page')
+      const nav = page ? page.querySelector('.wf-nav') : null
+      const navOffset = nav ? nav.offsetHeight : 0
+      sticky.style.top = navOffset + 'px'
+      pin.style.setProperty('--nav-h', navOffset + 'px')
+      pin.style.setProperty('--above-h', (head ? head.offsetHeight : 0) + 'px')
+
+      const h = sticky.getBoundingClientRect().height
+      pin.style.height = (h + ROUTE_SCROLL_BUDGET) + 'px'
+
+      pin.dataset.navOffset = navOffset
+    })
+  }
+
+  function updateRouteMaps() {
+    document.querySelectorAll('.wf-route-pin').forEach(pin => {
+      const sticky = pin.querySelector('.wf-route-sticky')
+      const map = pin.querySelector('.wf-route-map')
+      if (!sticky || !map) return
+      const lines = map.querySelectorAll('.wf-route-path, .wf-route-path-bg')
+      const end = map.querySelector('.wf-route-end')
+      if (!lines.length) return
+
+      const navOffset = Number(pin.dataset.navOffset || 0)
+      const scrollable = pin.offsetHeight - sticky.offsetHeight
+      if (scrollable <= 0) return
+
+      const progress = Math.max(0, Math.min(1, (navOffset - pin.getBoundingClientRect().top) / scrollable))
+      const drawn = Math.min(1, progress / 0.7)
+      lines.forEach(line => { line.style.strokeDashoffset = 1000 * (1 - drawn) })
+      if (end) end.classList.toggle('in-view', drawn >= 0.97)
+    })
+  }
+
+  const pages = document.querySelectorAll('.page')
+
+  const HOME_ONLY = document.body.classList.contains('home-only')
+
+  function goToPage(target) {
+    if (HOME_ONLY && target !== 'home') return
+    document.querySelectorAll('.wf-nav.open').forEach(nav => nav.classList.remove('open'))
+    pages.forEach(p => p.classList.remove('active'))
+    document.getElementById('page-' + target).classList.add('active')
+    document.getElementById('canvas').scrollTop = 0
+    window.scrollTo(0, 0)
+    updateNavCompact(true)
+    layoutNavLogos()
+    layoutHscrollers()
+    layoutRouteMaps()
+    layoutBrookMaps()
+    refreshBrookMaps()
+    updateTimelines()
+    updateBrookMaps()
+    updateRouteMaps()
+    updateDepthFade()
+  }
+
+  function layoutNavLogos() {
+    document.querySelectorAll('.wf-nav').forEach(nav => {
+      const cols = nav.querySelector('.wf-nav-cols')
+      const img = nav.querySelector('.logo-box img')
+      if (!cols || !img || nav.classList.contains('compact')) return
+      nav.classList.add('instant')
+      const h = MOBILE.matches ? 44 : Math.min(90, cols.getBoundingClientRect().height || 90)
+      img.style.height = h + 'px'
+      if (nav.offsetHeight) nav.parentElement.style.height = nav.offsetHeight + 'px'
+      nav.classList.remove('instant')
+    })
+  }
+
+  let navCompact = false, navRelayout = 0
+  function updateNavCompact(instant) {
+    const page = document.querySelector('.page.active')
+    const wrap = page && page.querySelector('.wf-nav-wrap')
+    if (!wrap) return
+    const hero = page.querySelector('.wf-hero')
+    const limit = hero ? hero.offsetTop + hero.offsetHeight - wrap.offsetHeight : 80
+    const on = scrollY > (navCompact ? limit - 40 : limit)
+    if (on === navCompact) return
+    navCompact = on
+    document.querySelectorAll('.wf-nav').forEach(nav => {
+      if (instant) nav.classList.add('instant')
+      nav.classList.toggle('compact', on)
+      nav.querySelectorAll('.wf-nav-col.open').forEach(c => c.classList.remove('open'))
+      if (instant) { nav.offsetHeight; nav.classList.remove('instant') }
+    })
+    clearTimeout(navRelayout)
+    const relayout = () => {
+      clearTimeout(navRelayout)
+      layoutHscrollers(); layoutRouteMaps(); layoutBrookMaps()
+      updateTimelines(); updateBrookMaps(); updateRouteMaps(); updateDepthFade()
+    }
+    const img = wrap.querySelector('.logo-box img')
+    if (instant || !img) return
+    img.addEventListener('transitionend', relayout, { once: true })
+    navRelayout = setTimeout(relayout, 700)
+  }
+
+  document.querySelectorAll('.wf-nav-col-title').forEach(title => {
+    title.addEventListener('click', e => {
+      if (!title.closest('.wf-nav.compact') || MOBILE.matches) return
+      e.stopPropagation()
+      const col = title.parentElement
+      const wasOpen = col.classList.contains('open')
+      document.querySelectorAll('.wf-nav-col.open').forEach(c => c.classList.remove('open'))
+      col.classList.toggle('open', !wasOpen)
+    })
+  })
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.wf-nav-col.open').forEach(c => c.classList.remove('open'))
+  })
+
+  document.querySelectorAll('.wf-nav-col a[data-key]').forEach(a => {
+    a.addEventListener('click', () => goToPage(a.dataset.key))
+  })
+
+  document.querySelectorAll('.wf-nav .logo-box').forEach(el => { el.dataset.goto = 'home' })
+  document.querySelectorAll('.wf-img').forEach(img => {
+    const t = img.textContent
+    if (t.includes('Educational Resource')) img.dataset.goto = 'edu-resource'
+    else if (t.includes('Impact PDF')) img.dataset.goto = 'impact-report'
+    else if (t.includes('Blog image')) {
+      img.dataset.goto = 'blog-post'
+      const row = img.parentElement
+      row.querySelectorAll('span').forEach(s => { if (s.textContent.trim() === 'Read More') s.dataset.goto = 'blog-post' })
+    }
+  })
+  document.querySelectorAll('[data-goto]').forEach(el => {
+    el.addEventListener('click', () => goToPage(el.dataset.goto))
+  })
+
+  const MOBILE = window.matchMedia('(max-width: 760px)')
+
+  document.querySelectorAll('.wf-oracle').forEach(oracle => {
+    const jump = () => {
+      const currentPage = document.querySelector('.page.active')
+      const candidates = [...pages].filter(p => p !== currentPage)
+      const pick = candidates[Math.floor(Math.random() * candidates.length)]
+      if (pick) goToPage(pick.id.replace('page-', ''))
+    }
+    oracle.addEventListener('click', jump)
+    oracle.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); jump() } })
+  })
+
+  const HSCROLL_SPEED = 1.2
+
+  function layoutHscrollers() {
+    document.querySelectorAll('.wf-hscroll-pin').forEach(pin => {
+      const sticky = pin.querySelector('.wf-hscroll-sticky')
+      const track = pin.querySelector('.wf-hscroll-track')
+      if (!sticky || !track) return
+
+      const page = pin.closest('.page')
+      const nav = page ? page.querySelector('.wf-nav') : null
+      const navH = nav ? nav.offsetHeight : 0
+      const spare = window.innerHeight - navH - sticky.offsetHeight
+      const navOffset = navH + Math.max(0, spare / 2 - 30)
+      sticky.style.top = navOffset + 'px'
+
+      const frame = pin.querySelector('.wf-hscroll-window') || sticky
+      if (frame !== sticky && page) {
+        frame.style.marginLeft = ''
+        frame.style.width = ''
+        const inset = frame.getBoundingClientRect().left - page.getBoundingClientRect().left
+        frame.style.marginLeft = -inset + 'px'
+        frame.style.width = page.clientWidth + 'px'
+        track.style.paddingLeft = track.style.paddingRight = inset + 'px'
+      }
+      const maxShift = Math.max(0, track.scrollWidth - frame.offsetWidth)
+      pin.style.height = (sticky.offsetHeight + maxShift * HSCROLL_SPEED) + 'px'
+
+      pin.dataset.navOffset = navOffset
+      pin.dataset.maxShift = maxShift
+    })
+  }
+
+  function updateTimelines() {
+    document.querySelectorAll('.wf-hscroll-pin').forEach(pin => {
+      const sticky = pin.querySelector('.wf-hscroll-sticky')
+      const track = pin.querySelector('.wf-hscroll-track')
+      if (!sticky || !track) return
+
+      const navOffset = Number(pin.dataset.navOffset || 0)
+      const maxShift = Number(pin.dataset.maxShift || 0)
+      const scrollable = pin.offsetHeight - sticky.offsetHeight
+      if (scrollable <= 0 || maxShift <= 0) return
+
+      const progress = Math.max(0, Math.min(1, (navOffset - pin.getBoundingClientRect().top) / scrollable))
+      track.style.transform = `translateX(-${maxShift * progress}px)`
+    })
+  }
+
+  const DEPTH_BANDS = {
+    surface:  [171, 204, 218],
+    shallows: [94, 152, 184],
+    mid:      [32, 100, 138],
+    deep:     [[12, 68, 98], [4, 30, 46]],
+    bed:      [[3, 18, 28], [1, 5, 9]],
+  }
+  const bandTop = c => Array.isArray(c[0]) ? c[0] : c
+  const bandBottom = c => Array.isArray(c[0]) ? c[1] : c
+  const FADE_TEXT_ON_LIGHT = { heading: [16, 28, 40], muted: [36, 56, 74], border: [116, 150, 170], extreme: [0, 0, 0] }
+  const FADE_TEXT_ON_DARK = { heading: [240, 244, 248], muted: [196, 214, 232], border: [62, 86, 116], extreme: [255, 255, 255] }
+  const MIN_CONTRAST_HEADING = 7
+  const MIN_CONTRAST_TEXT = 4.5
+  const MIN_CONTRAST_BORDER = 1.4
+
+  function mixRgb(a, b, t) {
+    return [0, 1, 2].map(i => Math.round(a[i] + (b[i] - a[i]) * t))
+  }
+  function rgbCss(c) { return `rgb(${c[0]}, ${c[1]}, ${c[2]})` }
+  function luminance(c) {
+    const [r, g, b] = c.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4) })
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+  }
+  function contrast(a, b) {
+    const la = luminance(a), lb = luminance(b)
+    return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05)
+  }
+  function ensureContrast(fg, extreme, bg, min) {
+    for (let t = 0; t <= 1; t += 0.05) {
+      const c = mixRgb(fg, extreme, t)
+      if (contrast(c, bg) >= min) return c
+    }
+    return extreme
+  }
+
+  function updateDepthFade() {
+    const el = document.getElementById('wf-depth-fade')
+    if (!el || !el.offsetHeight) return
+    const zoneTop = el.getBoundingClientRect().top
+    const bands = [...el.querySelectorAll('.wf-band[data-band]')]
+    const stops = []
+    const ease = t => t * t * (3 - 2 * t)
+    let prev = null
+    bands.forEach((band, i) => {
+      const colours = DEPTH_BANDS[band.dataset.band]
+      const bg = bandTop(colours)
+      const bgEnd = bandBottom(colours)
+      const r = band.getBoundingClientRect()
+      const top = i === 0 ? 0 : Math.round(r.top - zoneTop)
+      const bottom = i === bands.length - 1 ? el.offsetHeight : Math.round(r.bottom - zoneTop)
+      if (prev) {
+        for (let s = 1; s < 8; s++) {
+          const t = s / 8
+          stops.push(`${rgbCss(mixRgb(prev.end, bg, ease(t)))} ${Math.round(prev.bottom + (top - prev.bottom) * t)}px`)
+        }
+      }
+      stops.push(`${rgbCss(bg)} ${top}px`, `${rgbCss(bgEnd)} ${bottom}px`)
+      prev = { end: bgEnd, bottom }
+
+      const set = contrast(bg, [0, 0, 0]) >= contrast(bg, [255, 255, 255]) ? FADE_TEXT_ON_LIGHT : FADE_TEXT_ON_DARK
+      band.style.setProperty('--fade-bg', rgbCss(bg))
+      band.style.setProperty('--fade-heading', rgbCss(ensureContrast(set.heading, set.extreme, bg, MIN_CONTRAST_HEADING)))
+      band.style.setProperty('--fade-muted', rgbCss(ensureContrast(set.muted, set.extreme, bg, MIN_CONTRAST_TEXT)))
+      band.style.setProperty('--fade-border', rgbCss(ensureContrast(set.border, set.extreme, bg, MIN_CONTRAST_BORDER)))
+      band.dataset.bandBg = rgbCss(bg)
+    })
+    if (!stops.length) return
+    el.style.backgroundImage = `linear-gradient(to bottom, ${stops.join(', ')})`
+
+    const particles = el.querySelector('.wf-water-particles')
+    const mid = el.querySelector('.wf-band[data-band="mid"]')
+    if (particles && mid) particles.style.top = Math.round(mid.getBoundingClientRect().top - zoneTop - 300) + 'px'
+    const upper = el.querySelector('.wf-upper-life')
+    if (upper && mid) upper.style.height = Math.round(mid.getBoundingClientRect().top - zoneTop + 250) + 'px'
+    if (window.wfDepthText) window.wfDepthText()
+  }
+
+  const rand = (a, b) => a + Math.random() * (b - a)
+
+  const DENSITY = Math.max(0.35, Math.min(1, window.innerWidth / 1280))
+  const dotSets = []
+
+  document.querySelectorAll('.wf-bubbles').forEach(box => {
+    const [riseMin, riseMax] = (box.dataset.rise || '200,500').split(',').map(Number)
+    const [sizeMin, sizeMax] = (box.dataset.size || '1.5,3.5').split(',').map(Number)
+    const [oMin, oMax] = (box.dataset.opacity || '0.2,0.5').split(',').map(Number)
+    const count = Math.max(6, Math.round(Number(box.dataset.count || 30) * DENSITY))
+    const dots = []
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement('span')
+      el.className = 'wf-bubble'
+      const size = rand(sizeMin, sizeMax)
+      const top = rand(Number(box.dataset.from || 35), 100) / 100
+      el.style.width = el.style.height = size + 'px'
+      el.style.left = rand(3, 97) + '%'
+      el.style.top = top * 100 + '%'
+      el.appendChild(document.createElement('i'))
+      box.appendChild(el)
+      const rise = rand(riseMin, riseMax), o = rand(oMin, oMax), dur = rand(12000, 22000)
+      const off = rand(0, dur), wob = rand(1, 3), wobT = rand(1500, 3000)
+      dots.push({ el, top, reach: rise, update(now) {
+        const t = ((now + off) % dur) / dur
+        const a = t < 0.12 ? o * t / 0.12 : t > 0.8 ? o * (1 - t) / 0.2 : o
+        el.style.transform = `translate(${(wob * Math.sin(now / wobT * Math.PI)).toFixed(1)}px, ${(-rise * t).toFixed(1)}px)`
+        el.style.opacity = a.toFixed(3)
+      } })
+    }
+    dotSets.push({ box, dots })
+  })
+
+  document.querySelectorAll('.wf-water-particles').forEach(box => {
+    const dots = []
+    for (let i = 0; i < Math.round(520 * DENSITY); i++) {
+      const el = document.createElement('span')
+      const size = rand(2, 5), top = rand(0, 1)
+      el.style.width = el.style.height = size + 'px'
+      el.style.left = rand(0, 100) + '%'
+      el.style.top = top * 100 + '%'
+      el.style.opacity = rand(0.25, 0.9)
+      box.appendChild(el)
+      const dx = rand(-24, 24), dy = rand(-70, -20), dur = rand(7000, 16000), off = rand(0, 2 * dur)
+      dots.push({ el, top, reach: 80, update(now) {
+        const p = (1 - Math.cos(Math.PI * (now + off) / dur)) / 2
+        el.style.transform = `translate(${(dx * p).toFixed(1)}px, ${(dy * p).toFixed(1)}px)`
+      } })
+    }
+    dotSets.push({ box, dots })
+  })
+
+  ;(function tickDots(now) {
+    dotSets.forEach(({ box, dots }) => {
+      const r = box.getBoundingClientRect()
+      if (!r.height || r.bottom < -100 || r.top > innerHeight + 600) return
+      dots.forEach(d => {
+        const y = r.top + d.top * r.height
+        if (y > -100 && y < innerHeight + d.reach + 100) d.update(now)
+      })
+    })
+    requestAnimationFrame(tickDots)
+  })(performance.now())
+  ;(function () {
+    const zone = document.getElementById('wf-depth-fade')
+    const canvas = zone && zone.querySelector('.wf-sunlight canvas')
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const SCALE = 0.5
+    const BEAM_ALPHA = 0.07
+    const beamMask = b => 1 - Math.max(0, Math.min(1, (b - 0.45) / 0.15))
+    const beamCanvas = document.createElement('canvas')
+    const bctx = beamCanvas.getContext('2d')
+    const smooth = t => { t = Math.max(0, Math.min(1, t)); return t * t * (3 - 2 * t) }
+
+    const PALETTE = [
+      [1.00, [171, 204, 218]],
+      [0.85, [118, 172, 201]],
+      [0.70, [58, 128, 166]],
+      [0.55, [26, 92, 130]],
+      [0.40, [12, 62, 94]],
+      [0.25, [5, 34, 54]],
+      [0.10, [2, 12, 20]],
+      [0.00, [1, 5, 9]],
+    ]
+    function colourAt(b) {
+      if (b >= PALETTE[0][0]) return PALETTE[0][1]
+      for (let i = 1; i < PALETTE.length; i++) {
+        const [b1, c1] = PALETTE[i - 1], [b2, c2] = PALETTE[i]
+        if (b >= b2) return mixRgb(c2, c1, (b - b2) / (b1 - b2))
+      }
+      return PALETTE[PALETTE.length - 1][1]
+    }
+
+    function size() {
+      canvas.width = Math.max(1, Math.round(innerWidth * SCALE))
+      canvas.height = Math.max(1, Math.round(innerHeight * SCALE))
+    }
+
+    function state() {
+      const nav = document.querySelector('.page.active .wf-nav')
+      const navH = nav ? nav.offsetHeight : 0
+      const zoneTop = zone.getBoundingClientRect().top + scrollY
+      const bed = zone.querySelector('.wf-band[data-band="bed"]')
+      const bedTop = bed ? bed.getBoundingClientRect().top + scrollY : zoneTop + zone.offsetHeight
+      const zoneEnd = zoneTop + zone.offsetHeight
+      const y = scrollY + navH
+      let top
+      if (y < bedTop) top = 1 - 0.72 * Math.max(0, (y - zoneTop) / Math.max(1, bedTop - zoneTop))
+      else top = 0.28 - 0.16 * Math.min(1, (y - bedTop) / Math.max(1, zoneEnd - innerHeight - bedTop))
+      const dark = 1 - top
+      return { navH, top, fall: 0.5 * smooth(dark / 0.35), edge: 0.35 * smooth(dark / 0.5), beams: smooth(dark / 0.3) * (0.4 + 0.6 * top) }
+    }
+
+    function brightnessAt(s, vy) {
+      const yFrac = Math.max(0, Math.min(1, (vy - s.navH) / Math.max(1, innerHeight - s.navH)))
+      return s.top - s.fall * yFrac
+    }
+
+    function draw(time) {
+      const w = canvas.width, h = canvas.height
+      const s = state()
+      const rect = canvas.getBoundingClientRect()
+      const toVy = y => rect.top + (y / h) * rect.height
+
+      const g = ctx.createLinearGradient(0, 0, 0, h)
+      for (let i = 0; i <= 12; i++) {
+        const y = (i / 12) * h
+        g.addColorStop(i / 12, rgbCss(colourAt(brightnessAt(s, toVy(y)))))
+      }
+      ctx.globalCompositeOperation = 'source-over'
+      ctx.fillStyle = g
+      ctx.fillRect(0, 0, w, h)
+
+      if (s.beams > 0.01) {
+        if (beamCanvas.width !== w || beamCanvas.height !== h) { beamCanvas.width = w; beamCanvas.height = h }
+        const t = still ? 0 : time * 0.0005
+        const beams = bctx.createLinearGradient(0, 0, w, 0)
+        for (let i = 0; i <= 64; i++) {
+          const x = i / 64
+          const v = Math.max(0, Math.sin(x * 15 + t)) * Math.max(0, Math.sin(x * 6.3 - t * 0.6 + 1.3))
+          beams.addColorStop(x, `rgba(150, 215, 240, ${(BEAM_ALPHA * v * s.beams).toFixed(3)})`)
+        }
+        bctx.globalCompositeOperation = 'copy'
+        bctx.fillStyle = beams
+        bctx.fillRect(0, 0, w, h)
+        const mask = bctx.createLinearGradient(0, 0, 0, h)
+        for (let i = 0; i <= 12; i++) {
+          mask.addColorStop(i / 12, `rgba(0,0,0,${beamMask(brightnessAt(s, toVy((i / 12) * h))).toFixed(3)})`)
+        }
+        bctx.globalCompositeOperation = 'destination-in'
+        bctx.fillStyle = mask
+        bctx.fillRect(0, 0, w, h)
+        ctx.globalCompositeOperation = 'screen'
+        ctx.drawImage(beamCanvas, 0, 0)
+      }
+
+      if (s.edge > 0.01) {
+        ctx.globalCompositeOperation = 'source-over'
+        const e = ctx.createLinearGradient(0, 0, w, 0)
+        e.addColorStop(0, `rgba(1, 5, 12, ${s.edge})`)
+        e.addColorStop(0.22, 'rgba(1, 5, 12, 0)')
+        e.addColorStop(0.78, 'rgba(1, 5, 12, 0)')
+        e.addColorStop(1, `rgba(1, 5, 12, ${s.edge})`)
+        ctx.fillStyle = e
+        ctx.fillRect(0, 0, w, h)
+      }
+      ctx.globalCompositeOperation = 'source-over'
+    }
+
+    const TEXT_SELECTOR = '.wf-h2, .wf-h3, .wf-group-title, .wf-timeline-year, .wf-timeline-track, .wf-timeline-dot, .wf-divider, .label, .wf-map-caption, .wf-btn, .wf-text, [style*="--fade-"]'
+    const BEAM = [150, 215, 240]
+    function bgFor(s, cx, cy) {
+      const bright = brightnessAt(s, cy)
+      const base = colourAt(bright)
+      const xf = Math.max(0, Math.min(1, cx / innerWidth))
+      const ea = s.edge * Math.max(0, (0.22 - xf) / 0.22, (xf - 0.78) / 0.22)
+      const shaded = mixRgb(base, [1, 5, 12], ea)
+      const ba = BEAM_ALPHA * s.beams * beamMask(bright)
+      const beamed = base.map((c, i) => Math.round(c + (255 - c) * ba * BEAM[i] / 255))
+      return { base, shaded, beamed }
+    }
+    const WHITE_BELOW = 0.26, BUFFER = 0.03
+    function applyVars(el, bg, forced) {
+      const lum = luminance(bg.base)
+      const wasWhite = el.dataset.tone === 'light'
+      const white = forced !== undefined ? forced : lum < WHITE_BELOW + (wasWhite ? BUFFER : -BUFFER)
+      const useLight = !white
+      if (!el.classList.contains('wf-band')) el.dataset.tone = white ? 'light' : 'dark'
+      const set = useLight ? FADE_TEXT_ON_LIGHT : FADE_TEXT_ON_DARK
+      const worst = useLight ? bg.shaded : bg.beamed
+      el.style.setProperty('--fade-bg', rgbCss(bg.base))
+      el.style.setProperty('--fade-heading', rgbCss(ensureContrast(set.heading, set.extreme, worst, MIN_CONTRAST_HEADING)))
+      el.style.setProperty('--fade-muted', rgbCss(ensureContrast(set.muted, set.extreme, worst, MIN_CONTRAST_TEXT)))
+      el.style.setProperty('--fade-border', rgbCss(ensureContrast(set.border, set.extreme, worst, MIN_CONTRAST_BORDER)))
+    }
+    let textEls = null
+    function updateText() {
+      const s = state()
+      if (!textEls) textEls = [...zone.querySelectorAll('.wf-band')].flatMap(b => [...b.querySelectorAll(TEXT_SELECTOR)])
+      const bands = [...zone.querySelectorAll('.wf-band[data-band]')]
+      const jobs = []
+      bands.forEach(band => {
+        const r = band.getBoundingClientRect()
+        const y0 = Math.max(r.top, s.navH), y1 = Math.min(r.bottom, innerHeight)
+        if (y1 > y0) jobs.push([band, bgFor(s, innerWidth / 2, (y0 + y1) / 2)])
+      })
+      textEls.forEach(el => {
+        const r = el.getBoundingClientRect()
+        if (r.bottom < 0 || r.top > innerHeight || !r.width) return
+        jobs.push([el, bgFor(s, r.left + r.width / 2, r.top + r.height / 2)])
+      })
+      const groupTone = new Map()
+      zone.querySelectorAll('.wf-band[data-tone-group]').forEach(band => {
+        const members = jobs.filter(([el]) => el !== band && band.contains(el))
+        if (!members.length) return
+        const avg = members.reduce((a, [, bg]) => a + luminance(bg.base), 0) / members.length
+        const wasWhite = band.dataset.groupTone === 'light'
+        const white = avg < WHITE_BELOW + (wasWhite ? BUFFER : -BUFFER)
+        band.dataset.groupTone = white ? 'light' : 'dark'
+        groupTone.set(band, white)
+      })
+      jobs.forEach(([el, bg]) => {
+        let forced
+        groupTone.forEach((white, band) => { if (el !== band && band.contains(el)) forced = white })
+        applyVars(el, bg, forced)
+      })
+    }
+    window.wfDepthText = updateText
+
+    let visible = false, ticking = false
+    function loop(time) {
+      if (!visible) return
+      draw(time)
+      if (!still) requestAnimationFrame(loop)
+    }
+    new IntersectionObserver(entries => {
+      visible = entries[0].isIntersecting
+      if (visible) requestAnimationFrame(loop)
+    }).observe(zone)
+    addEventListener('scroll', () => {
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(() => {
+        ticking = false
+        updateText()
+        if (still && visible) draw(0)
+      })
+    }, { passive: true })
+    addEventListener('resize', () => { size(); draw(performance.now()); updateText() })
+    size()
+    draw(0)
+    updateText()
+  })()
+
+  if (window.ResizeObserver && document.getElementById('wf-depth-fade')) {
+    new ResizeObserver(() => updateDepthFade()).observe(document.getElementById('wf-depth-fade'))
+  }
+
+  window.addEventListener('scroll', () => { updateNavCompact(); updateTimelines(); updateBrookMaps(); updateRouteMaps() }, { passive: true })
+  window.addEventListener('resize', () => { layoutNavLogos(); layoutHscrollers(); layoutRouteMaps(); layoutBrookMaps(); updateTimelines(); updateBrookMaps(); updateRouteMaps(); updateDepthFade() })
+  layoutNavLogos()
+  layoutHscrollers()
+  layoutRouteMaps()
+  layoutBrookMaps()
+  updateTimelines()
+  updateBrookMaps()
+  updateRouteMaps()
+  updateDepthFade()
+</script>
+</body>
+</html>
