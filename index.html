@@ -332,6 +332,7 @@
     height: 1px;
     background: #3d5546;
   }
+  .wf-depth-tick.minor { left: -4px; width: 8px; opacity: 0.55; }
   .wf-depth-tick span {
     position: absolute;
     left: 18px;
@@ -383,7 +384,11 @@
   .wf-depth-fade > .wf-body,
   .wf-depth-fade > div:not([class]) { position: relative; z-index: 1; }
 
-  .wf-band-break { height: 220px; }
+  .wf-band-break { height: 220px; display: flex; align-items: center; justify-content: center; }
+  .wf-band-break .wf-critter { margin: 0; }
+  #page-home .wf-body .wf-critter-sep { margin: 36px auto; }
+  #page-home .wf-body .wf-critter.at-left { margin-left: 0; margin-right: auto; }
+  #page-home .wf-body .wf-critter.at-right { margin-left: auto; margin-right: 0; }
 
   .wf-band [data-tone] { transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease; }
   .wf-band [data-tone="light"]:not(.wf-text):not(.wf-btn) { text-shadow: 0 1px 3px rgba(0, 18, 36, 0.45); }
@@ -773,9 +778,19 @@
   .wf-strip-label { font-size: 12px; font-weight: 600; flex: 1; min-width: 120px; }
 
   .wf-footer { margin-top: 0; }
+  .wf-footer-specks.wf-water-particles {
+    top: 0;
+    z-index: -1;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
   .wf-footer-block {
-    background: #f5f5f0;
-    color: #0e1a26;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: #010509;
+    box-shadow: 0 -1px 0 #010509;
+    color: #f5f5f0;
     display: flex;
     flex-direction: column;
     gap: 80px;
@@ -793,9 +808,9 @@
   .wf-footer-cols a { display: block; color: inherit; text-decoration: none; cursor: pointer; }
   .wf-footer-cols a:hover { text-decoration: underline; }
   .wf-footer-friend { grid-column: span 2; display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
-  .wf-footer-friend img { height: 120px; width: auto; display: block; }
+  .wf-footer-friend img { height: 7em; width: auto; display: block; transform: translateY(-0.4em); }
   .wf-footer-end { display: flex; justify-content: space-between; align-items: flex-end; padding-right: 110px; }
-  .wf-footer .wf-critter { margin: 0; border-color: rgba(14, 26, 38, 0.4); background: transparent; color: #0e1a26; }
+  .wf-footer .wf-critter { margin: 0; border-color: rgba(245, 245, 240, 0.45); background: transparent; color: #f5f5f0; }
 
   .wf-breadcrumb {
     font-size: 11px;
@@ -912,11 +927,21 @@
       aspect-ratio: 3 / 4;
     }
 
-    .wf-footer-block { padding: 24px 16px 20px; gap: 48px; font-size: 14px; }
-    .wf-footer-cols, .wf-footer-bottom { grid-template-columns: 1fr 1fr; gap: 28px 16px; }
-    .wf-footer-bottom { padding-bottom: 84px; }
-    .wf-footer-end { padding-right: 0; }
-    .wf-footer-friend img { height: 84px; }
+    .wf-footer-block {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px 16px;
+      padding: 28px 16px 24px;
+      font-size: 15px;
+    }
+    .wf-footer-cols, .wf-footer-bottom, .wf-footer-friend { display: contents; }
+    .wf-footer-friend img { order: 0; height: 72px; transform: none; justify-self: start; }
+    .wf-footer-end { order: 1; padding-right: 0; justify-self: end; align-self: start; }
+    .wf-footer-cols > div:nth-child(1) { order: 2; }
+    .wf-footer-cols > div:nth-child(2) { order: 3; }
+    .wf-footer-friend-links { order: 4; grid-column: 1 / -1; }
+    .wf-footer-tagline { order: 5; grid-column: 1 / -1; max-width: 300px; }
+    .wf-footer-copy { order: 6; grid-column: 1 / -1; font-size: 13px; font-weight: 400; opacity: 0.8; }
   }
 </style>
 </head>
@@ -942,6 +967,51 @@
         <div class="wf-depth-tick" style="bottom:40%"><span>1.4m</span></div>
         <div class="wf-depth-tick" style="bottom:20%"><span>1.2m</span></div>
         <div class="wf-depth-tick" style="bottom:0%"><span>1m</span></div>
+        <div class="wf-depth-tick minor" style="bottom:2%"></div>
+        <div class="wf-depth-tick minor" style="bottom:4%"></div>
+        <div class="wf-depth-tick minor" style="bottom:6%"></div>
+        <div class="wf-depth-tick minor" style="bottom:8%"></div>
+        <div class="wf-depth-tick minor" style="bottom:10%"></div>
+        <div class="wf-depth-tick minor" style="bottom:12%"></div>
+        <div class="wf-depth-tick minor" style="bottom:14%"></div>
+        <div class="wf-depth-tick minor" style="bottom:16%"></div>
+        <div class="wf-depth-tick minor" style="bottom:18%"></div>
+        <div class="wf-depth-tick minor" style="bottom:22%"></div>
+        <div class="wf-depth-tick minor" style="bottom:24%"></div>
+        <div class="wf-depth-tick minor" style="bottom:26%"></div>
+        <div class="wf-depth-tick minor" style="bottom:28%"></div>
+        <div class="wf-depth-tick minor" style="bottom:30%"></div>
+        <div class="wf-depth-tick minor" style="bottom:32%"></div>
+        <div class="wf-depth-tick minor" style="bottom:34%"></div>
+        <div class="wf-depth-tick minor" style="bottom:36%"></div>
+        <div class="wf-depth-tick minor" style="bottom:38%"></div>
+        <div class="wf-depth-tick minor" style="bottom:42%"></div>
+        <div class="wf-depth-tick minor" style="bottom:44%"></div>
+        <div class="wf-depth-tick minor" style="bottom:46%"></div>
+        <div class="wf-depth-tick minor" style="bottom:48%"></div>
+        <div class="wf-depth-tick minor" style="bottom:50%"></div>
+        <div class="wf-depth-tick minor" style="bottom:52%"></div>
+        <div class="wf-depth-tick minor" style="bottom:54%"></div>
+        <div class="wf-depth-tick minor" style="bottom:56%"></div>
+        <div class="wf-depth-tick minor" style="bottom:58%"></div>
+        <div class="wf-depth-tick minor" style="bottom:62%"></div>
+        <div class="wf-depth-tick minor" style="bottom:64%"></div>
+        <div class="wf-depth-tick minor" style="bottom:66%"></div>
+        <div class="wf-depth-tick minor" style="bottom:68%"></div>
+        <div class="wf-depth-tick minor" style="bottom:70%"></div>
+        <div class="wf-depth-tick minor" style="bottom:72%"></div>
+        <div class="wf-depth-tick minor" style="bottom:74%"></div>
+        <div class="wf-depth-tick minor" style="bottom:76%"></div>
+        <div class="wf-depth-tick minor" style="bottom:78%"></div>
+        <div class="wf-depth-tick minor" style="bottom:82%"></div>
+        <div class="wf-depth-tick minor" style="bottom:84%"></div>
+        <div class="wf-depth-tick minor" style="bottom:86%"></div>
+        <div class="wf-depth-tick minor" style="bottom:88%"></div>
+        <div class="wf-depth-tick minor" style="bottom:90%"></div>
+        <div class="wf-depth-tick minor" style="bottom:92%"></div>
+        <div class="wf-depth-tick minor" style="bottom:94%"></div>
+        <div class="wf-depth-tick minor" style="bottom:96%"></div>
+        <div class="wf-depth-tick minor" style="bottom:98%"></div>
       </div>
 
       <div class="wf-depth-reading" id="wf-depth-reading">Water depth:</div>
@@ -961,6 +1031,8 @@
     <div style="text-align:center;padding:8px 0;position:relative;z-index:1;"><span class="wf-annotation">Water rises from the bottom on load to the live depth reading. Shown here as a random value each refresh, for demonstration</span></div>
 
     <div class="wf-body">
+
+      <div class="wf-critter at-left">illustrated critter</div>
 
       <div class="wf-band" data-band="surface" data-tone-group>
 
@@ -1005,7 +1077,7 @@
       <div class="wf-cta-row"><span class="wf-btn outline">Read More History</span></div>
       </div>
 
-      <div class="wf-band-break" aria-hidden="true"></div>
+      <div class="wf-band-break" aria-hidden="true"><div class="wf-critter at-right">illustrated critter</div></div>
 
       <div class="wf-band" data-band="shallows">
 
@@ -1031,7 +1103,7 @@
       </div>
       </div>
 
-      <div class="wf-band-break" aria-hidden="true"></div>
+      <div class="wf-band-break" aria-hidden="true"><div class="wf-critter at-left">illustrated critter</div></div>
 
       <div class="wf-band" data-band="mid">
 
@@ -1047,7 +1119,7 @@
       <div class="wf-cta-row"><span class="wf-btn">Add Your Sightings</span></div>
       </div>
 
-      <div class="wf-band-break" aria-hidden="true"></div>
+      <div class="wf-band-break" aria-hidden="true"><div class="wf-critter at-right">illustrated critter</div></div>
 
       <div class="wf-band" data-band="deep">
 
@@ -1072,10 +1144,9 @@
 
       <div class="wf-text medium"></div>
       <div class="wf-cta-row"><span class="wf-btn outline">Read More Chalkstreams</span></div>
-      <div class="wf-critter">illustrated critter</div>
       </div>
 
-      <div class="wf-band-break" aria-hidden="true"></div>
+      <div class="wf-band-break" aria-hidden="true"><div class="wf-critter at-left">illustrated critter</div></div>
 
       <div class="wf-band" data-band="bed">
 
@@ -1088,7 +1159,7 @@
       </div>
       <div class="wf-cta-row"><span class="wf-btn outline" data-goto="research">Read More Reports</span></div>
 
-      <hr class="wf-divider" />
+      <div class="wf-critter wf-critter-sep at-right">illustrated critter</div>
 
       <div class="wf-h2" style="margin-top:0;">Advocacy</div>
       <div class="wf-grid-2">
@@ -1097,7 +1168,7 @@
       </div>
       <div class="wf-cta-row"><span class="wf-btn outline" data-goto="advocacy">Read More Reports</span></div>
 
-      <hr class="wf-divider" />
+      <div class="wf-critter wf-critter-sep at-left">illustrated critter</div>
 
       <div class="wf-h2" style="margin-top:0;">Conservation</div>
       <div class="wf-grid-4">
@@ -1107,7 +1178,7 @@
         <div><div class="wf-img" style="height:70px;"></div><div class="wf-text short"></div><span style="font-size:10px;text-decoration:underline;color:var(--fade-muted,#666);">Read More</span></div>
       </div>
 
-      <hr class="wf-divider" />
+      <div class="wf-critter wf-critter-sep at-right">illustrated critter</div>
 
       <div class="wf-h2" style="margin-top:0;">Latest News</div>
       <div class="wf-grid-2-1">
@@ -1128,22 +1199,18 @@
       </div>
       <div class="wf-cta-row"><span class="wf-btn outline">See All News</span></div>
 
-      <hr class="wf-divider" />
+      <div class="wf-critter wf-critter-sep at-left">illustrated critter</div>
 
       <div class="wf-h2" style="margin-top:0;">Get In Touch / Volunteer</div>
-      <div class="wf-grid-2">
-        <div>
-          <div class="wf-form-grid">
-            <div class="wf-input">Name</div>
-            <div class="wf-input">Email</div>
-          </div>
-          <div class="wf-textarea">Message</div>
-          <div style="font-size:9px;color:var(--fade-muted,#aaa);margin-bottom:10px;">☐ GDPR consent checkbox</div>
-          <span class="wf-btn">Send Us A Message</span>
+      <div>
+        <div class="wf-form-grid">
+          <div class="wf-input">Name</div>
+          <div class="wf-input">Email</div>
         </div>
-        <div class="wf-img" style="height:200px;">Supporting image</div>
+        <div class="wf-textarea">Message</div>
+        <div style="font-size:9px;color:var(--fade-muted,#aaa);margin-bottom:10px;">☐ GDPR consent checkbox</div>
+        <span class="wf-btn">Send Us A Message</span>
       </div>
-      <div class="wf-critter">illustrated critter</div>
       </div>
 
     </div>
@@ -1469,6 +1536,7 @@
   const FOOTER_HTML = `
     <div class="wf-footer">
       <div class="wf-footer-block">
+        <div class="wf-water-particles wf-footer-specks" data-count="45" aria-hidden="true"></div>
         <div class="wf-footer-cols">
           <div>
             <a data-goto="conduit">The Conduit</a>
@@ -1484,13 +1552,13 @@
             <a data-goto="blog-post">News</a>
           </div>
           <div class="wf-footer-friend">
-            <div><a>Become a Friend</a><a>Donate</a></div>
-            <img src="wireframe-assets/little-logo-navy.svg" alt="Hobson's Conduit Trust" />
+            <div class="wf-footer-friend-links"><a>Become a Friend</a><a>Donate</a></div>
+            <img src="wireframe-assets/little-logo-light.svg" alt="Hobson's Conduit Trust" />
           </div>
         </div>
         <div class="wf-footer-bottom">
-          <div>© 2026 Hobson's Conduit Trust<br>Registered charity no. 204644</div>
-          <div>Bringing fresh water into the city of Cambridge since 1609</div>
+          <div class="wf-footer-copy">© 2026 Hobson's Conduit Trust<br>Registered charity no. 204644</div>
+          <div class="wf-footer-tagline">Bringing fresh water into the city of Cambridge since 1609</div>
           <div class="wf-footer-end"><div class="wf-critter">illustrated critter</div></div>
         </div>
       </div>
@@ -1994,7 +2062,7 @@
 
   document.querySelectorAll('.wf-water-particles').forEach(box => {
     const dots = []
-    for (let i = 0; i < Math.round(520 * DENSITY); i++) {
+    for (let i = 0; i < Math.round(Number(box.dataset.count || 520) * DENSITY); i++) {
       const el = document.createElement('span')
       const size = rand(2, 5), top = rand(0, 1)
       el.style.width = el.style.height = size + 'px'
@@ -2128,6 +2196,17 @@
         ctx.fillRect(0, 0, w, h)
       }
       ctx.globalCompositeOperation = 'source-over'
+      const zb = (zone.getBoundingClientRect().bottom - rect.top) / rect.height * h
+      const fadeH = 700 / rect.height * h
+      if (zb - fadeH < h) {
+        const f = ctx.createLinearGradient(0, zb - fadeH, 0, zb)
+        f.addColorStop(0, 'rgba(1, 5, 9, 0)')
+        f.addColorStop(0.35, 'rgba(1, 5, 9, 0.6)')
+        f.addColorStop(0.7, 'rgba(1, 5, 9, 1)')
+        f.addColorStop(1, 'rgba(1, 5, 9, 1)')
+        ctx.fillStyle = f
+        ctx.fillRect(0, zb - fadeH, w, fadeH + 2)
+      }
     }
 
     const TEXT_SELECTOR = '.wf-h2, .wf-h3, .wf-group-title, .wf-timeline-year, .wf-timeline-track, .wf-timeline-dot, .wf-divider, .label, .wf-map-caption, .wf-btn, .wf-text, [style*="--fade-"]'
