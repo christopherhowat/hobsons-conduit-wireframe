@@ -361,12 +361,7 @@
     background:
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='26' viewBox='0 0 480 26'%3E%3Cpath d='M0 14 Q60 4 120 14 T240 14 T360 14 T480 14 V26 H0 Z' fill='rgb(207,227,234)'/%3E%3Cpath d='M0 14 Q60 4 120 14 T240 14 T360 14 T480 14' fill='none' stroke='rgba(255,255,255,0.75)' stroke-width='2.2'/%3E%3C/svg%3E") repeat-x 0 100% / 480px 26px,
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='660' height='26' viewBox='0 0 660 26'%3E%3Cpath d='M0 12 Q82 2 165 12 T330 12 T495 12 T660 12 V26 H0 Z' fill='rgb(226,235,237)'/%3E%3C/svg%3E") repeat-x 0 100% / 660px 26px;
-    animation: wf-wave 14s linear infinite;
   }
-  @keyframes wf-wave {
-    to { background-position: 480px 100%, -660px 100%; }
-  }
-  @media (prefers-reduced-motion: reduce) { .wf-wave { animation: none; } }
   .wf-depth-reading {
     position: absolute;
     top: 16px; right: 16px;
@@ -1957,6 +1952,14 @@
   }
 
   const rand = (a, b) => a + Math.random() * (b - a)
+
+  document.querySelectorAll('.wf-wave').forEach(wave => {
+    ;(function drift(now) {
+      const t = now / 14000
+      wave.style.backgroundPosition = `${((t * 480) % 480).toFixed(1)}px 100%, ${(-(t * 660) % 660).toFixed(1)}px 100%`
+      requestAnimationFrame(drift)
+    })(performance.now())
+  })
 
   const DENSITY = Math.max(0.35, Math.min(1, window.innerWidth / 1280))
   const dotSets = []
