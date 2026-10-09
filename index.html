@@ -827,6 +827,9 @@
       75% { transform: translate(-5px, -3px); }
     }
   }
+  .hint-row { display: flex; justify-content: flex-end; margin: 10px 4px -2px; }
+  .hint-row .scroll-hint, #tl-hint { position: static; translate: none; }
+  #route-hint { top: calc(100% + 10px); bottom: auto; }
 </style>
 </head>
 <body>
@@ -907,8 +910,8 @@
   <section class="wrap" id="conduit" style="margin-top:40px;">
     <h2 class="part-title conduit" data-drift="1"><span>The Conduit</span></h2>
     <div class="pill">History</div>
+    <div class="hint-row"><span class="scroll-hint" id="tl-hint">Drag or swipe to travel through time <b>&harr;</b></span></div>
     <div class="tl-pin" id="tl-pin"><div class="card tl-card" id="tl-card">
-      <span class="scroll-hint" id="tl-hint">Drag or swipe to travel through time <b>&harr;</b></span>
       <div class="hs-track" id="tl-track"><div class="tl" id="timeline"></div></div>
       <div class="bar" data-for="tl-track"><span class="bar-thumb"></span></div>
     </div></div>
@@ -1412,7 +1415,7 @@
     let top = 20
     const layout = () => {
       const headH = innerWidth <= 760 ? 63 : 99
-      const room = innerHeight - headH - 32
+      const room = innerHeight - headH - 32 - 46
       const colW = pin.parentElement.clientWidth - (innerWidth <= 760 ? 0 : 0)
       box.style.height = Math.max(240, Math.min(innerWidth <= 760 ? 560 : 800, room, colW * 679 / 480)) + 'px'
       const h = box.offsetHeight
