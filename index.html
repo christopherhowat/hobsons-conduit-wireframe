@@ -809,7 +809,6 @@
   .oracle.floating text { font-size: 14px; }
 
   .down-arrow, .scroll-hint b { animation: none !important; }
-  .top.compact .logo-img { animation: none !important; }
   .pill, .report, .blog, #chalk-track, .map-card { transform: none !important; }
   html { overflow-x: clip; }
   .view, .footer { overflow-x: clip; }
@@ -830,6 +829,18 @@
   .hint-row { display: flex; justify-content: flex-end; margin: 10px 4px -2px; }
   .hint-row .scroll-hint, #tl-hint { position: static; translate: none; }
   #route-hint { top: calc(100% + 10px); bottom: auto; }
+  .top::before { content: none !important; }
+  .top-bg {
+    position: absolute; inset: 0 -100vmax; z-index: -1;
+    background: rgba(239, 239, 234, 0.96); border-bottom: 1.5px solid var(--ink);
+    transform-origin: 50% 0; opacity: 0; transform: none;
+    transition: transform 0.5s cubic-bezier(.22,1,.36,1), opacity 0.35s ease;
+  }
+  .top.compact .top-bg { opacity: 1; transform: none; }
+  .top .logo-img, .top .menu > button { will-change: transform; backface-visibility: hidden; }
+  .top-bg { transition: none !important; transform: none; }
+  .top:not(.compact) .top-bg { opacity: 0; }
+  .top-bg { will-change: transform, opacity; }
 </style>
 </head>
 <body>
@@ -884,6 +895,7 @@
 
   <div class="top-spacer" id="top-spacer"></div>
   <header class="top wrap" id="site-header">
+    <span class="top-bg" aria-hidden="true"></span>
     <a class="home-link" href="#/" aria-label="Home"><img class="logo-img" src="wireframe-assets/design/wordmark.webp" alt="Hobson&rsquo;s Conduit Trust" /></a>
     <nav class="menus">
       <div class="menu yellow">
@@ -1568,21 +1580,35 @@
     const head = document.getElementById('site-header'), spacer = document.getElementById('top-spacer')
     let compact = false
     const size = () => { if (!compact) spacer.style.height = head.offsetHeight + 'px' }
+    const logo = head.querySelector('.logo-img')
+    let lastY = scrollY, vel = 0, rocking = false, idle = 0
+    const rock = () => {
+      const dy = scrollY - lastY; lastY = scrollY
+      vel += (dy - vel) * 0.2
+      const r = Math.max(-1, Math.min(1, vel / 30)) * -1.5
+      logo.style.rotate = Math.abs(r) < 0.02 ? '' : r.toFixed(2) + 'deg'
+      idle = dy ? 0 : idle + 1
+      if (Math.abs(vel) > 0.05 || idle < 4) requestAnimationFrame(rock); else { rocking = false; vel = 0; logo.style.rotate = '' }
+    }
+    addEventListener('scroll', () => { if (!rocking) { rocking = true; idle = 0; requestAnimationFrame(rock) } }, { passive: true })
     const update = () => {
       const on = scrollY > (compact ? 30 : 90)
       if (on === compact) return
       compact = on
-      const parts = [head.querySelector('.logo-img'), ...head.querySelectorAll('.menu > button')]
-      const first = parts.map(e => e.getBoundingClientRect())
-      parts.forEach(e => { e.style.transition = 'none'; e.style.transform = '' })
+      const bg = head.querySelector('.top-bg')
+      const parts = [logo, ...head.querySelectorAll('.menu > button')]
+      parts.concat(bg).forEach(e => e.getAnimations().forEach(x => x.cancel()))
+      const first = parts.map(e => e.getBoundingClientRect()), h0 = head.offsetHeight
       head.classList.toggle('compact', on)
-      const last = parts.map(e => e.getBoundingClientRect())
+      const last = parts.map(e => e.getBoundingClientRect()), h1 = head.offsetHeight
+      const opts = { duration: 500, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'backwards' }
       parts.forEach((e, n) => {
-        const f = first[n], l = last[n], k = f.height / l.height
-        e.style.transform = `translate(${(f.left - l.left).toFixed(1)}px, ${(f.top - l.top).toFixed(1)}px) scale(${k.toFixed(4)})`
+        const f = first[n], l = last[n]
+        e.animate([{ transform: `translate(${f.left - l.left}px, ${f.top - l.top}px) scale(${f.width / l.width}, ${f.height / l.height})` }, { transform: 'none' }], opts)
       })
-      void head.offsetWidth
-      requestAnimationFrame(() => parts.forEach(e => { e.style.transition = 'transform 0.5s cubic-bezier(.22,1,.36,1)'; e.style.transform = '' }))
+      bg.animate(on
+        ? [{ transform: `scaleY(${h0 / h1})`, opacity: 0.6 }, { transform: 'none', opacity: 1 }]
+        : [{ transform: `scaleY(${h0 / h1})`, opacity: 1 }, { transform: 'none', opacity: 0 }], opts)
       document.querySelectorAll('.menu.open').forEach(m => { m.classList.remove('open'); m.querySelector('button').setAttribute('aria-expanded', 'false') })
     }
     addEventListener('scroll', update, { passive: true })
